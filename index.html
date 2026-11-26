@@ -1,0 +1,2521 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WD Corporation - 사내 인트라넷 업무 허브</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <style>
+    :root {
+      --bg-page: #eef2f6;
+      --bg-surface: #ffffff;
+      --bg-subtle: #f8fafc;
+      --bg-muted: #f1f5f9;
+      --bg-canvas: #f8fafc;
+      --grid-dot: #cbd5e1;
+      --border-light: #e2e8f0;
+      --border-mid: #cbd5e1;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #64748b;
+      --navy-950: #0b1324;
+      --navy-900: #111c33;
+      --accent: #1d4ed8;
+      --accent-hover: #1e40af;
+      --accent-soft: #eff6ff;
+      --accent-border: #bfdbfe;
+      --stat-text: #1e3a8a;
+      --success: #047857;
+      --success-soft: #ecfdf5;
+      --warn: #b45309;
+      --warn-soft: #fffbeb;
+      --warn-border: #fde68a;
+      --danger: #b91c1c;
+      --danger-soft: #fef2f2;
+      --danger-border: #fecaca;
+      --radius-lg: 12px;
+      --radius-md: 8px;
+      --radius-sm: 6px;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 8px 20px -6px rgba(15, 23, 42, 0.12);
+    }
+
+    body.dark-mode {
+      --bg-page: #090d16;
+      --bg-surface: #111827;
+      --bg-subtle: #162033;
+      --bg-muted: #1e293b;
+      --bg-canvas: #0d1424;
+      --grid-dot: #24324a;
+      --border-light: #243044;
+      --border-mid: #334155;
+      --text-primary: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --navy-950: #060a12;
+      --navy-900: #0e1626;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --accent-soft: rgba(59, 130, 246, 0.14);
+      --accent-border: rgba(96, 165, 250, 0.35);
+      --stat-text: #93c5fd;
+      --success: #34d399;
+      --success-soft: rgba(16, 185, 129, 0.14);
+      --warn: #fbbf24;
+      --warn-soft: rgba(245, 158, 11, 0.12);
+      --warn-border: rgba(245, 158, 11, 0.28);
+      --danger: #f87171;
+      --danger-soft: rgba(239, 68, 68, 0.14);
+      --danger-border: rgba(248, 113, 113, 0.32);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+      --shadow-md: 0 10px 24px -6px rgba(0, 0, 0, 0.55);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Pretendard", "Malgun Gothic", "Segoe UI", sans-serif;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: 1.45;
+      transition: background-color 0.18s ease, color 0.18s ease;
+    }
+
+    ::-webkit-scrollbar { width: 7px; height: 7px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    header {
+      min-height: 54px;
+      background: linear-gradient(90deg, var(--navy-950) 0%, var(--navy-900) 100%);
+      color: #f8fafc;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 20px;
+      gap: 12px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .brand-title {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      color: #ffffff;
+    }
+    .header-divider {
+      width: 1px;
+      height: 14px;
+      background: #334155;
+    }
+    .badge {
+      background: rgba(59, 130, 246, 0.14);
+      border: 1px solid rgba(147, 197, 253, 0.35);
+      color: #bfdbfe;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+    .header-actions {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .status-pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.15);
+      color: #cbd5e1;
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+    .status-pill.connected {
+      background: rgba(16, 185, 129, 0.18);
+      color: #a7f3d0;
+      border-color: rgba(52, 211, 153, 0.4);
+    }
+
+    button {
+      background: var(--accent);
+      color: #ffffff;
+      border: 1px solid transparent;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+    }
+    button:hover { background: var(--accent-hover); }
+    button:disabled { background: #64748b; cursor: not-allowed; opacity: 0.75; }
+
+    button.secondary {
+      background: var(--bg-muted);
+      color: var(--text-primary);
+      border-color: var(--border-mid);
+    }
+    button.secondary:hover { background: var(--border-light); }
+
+    button.ghost {
+      background: rgba(255, 255, 255, 0.06);
+      color: #e2e8f0;
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+    button.ghost:hover { background: rgba(255, 255, 255, 0.14); }
+
+    button.theme-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #f8fafc;
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+    button.theme-btn:hover { background: rgba(255, 255, 255, 0.18); }
+
+    button.widget-btn {
+      background: #0369a1;
+      color: #ffffff;
+      border-color: #0284c7;
+    }
+    button.widget-btn:hover { background: #075985; }
+
+    button.preset-btn {
+      background: #047857;
+      color: #ffffff;
+      border-color: #059669;
+    }
+    button.preset-btn:hover { background: #065f46; }
+
+    button.snap-btn {
+      background: var(--bg-muted);
+      color: var(--text-secondary);
+      border-color: var(--border-mid);
+    }
+    button.snap-btn.active {
+      background: #d97706;
+      color: #ffffff;
+      border-color: #b45309;
+    }
+
+    button.google-btn {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      border-color: var(--border-mid);
+    }
+    button.google-btn:hover { background: var(--bg-muted); }
+
+    button.danger {
+      background: var(--danger-soft);
+      color: var(--danger);
+      border-color: var(--danger-border);
+      padding: 4px 8px;
+      font-size: 11px;
+    }
+    button.danger:hover { opacity: 0.88; }
+
+    button.small { padding: 4px 9px; font-size: 11px; }
+
+    .notice-bar {
+      background: var(--warn-soft);
+      border-bottom: 1px solid var(--warn-border);
+      color: var(--warn);
+      font-size: 12px;
+      padding: 7px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .toast-text {
+      font-weight: 700;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 356px 1fr 348px;
+      gap: 14px;
+      padding: 14px;
+    }
+    @media (max-width: 1200px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .panel-header {
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--border-light);
+      background: var(--bg-subtle);
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      letter-spacing: -0.2px;
+    }
+    .panel-submeta {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .cal-box { padding: 14px; border-bottom: 1px solid var(--border-light); }
+    .cal-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      text-align: center;
+      font-size: 12px;
+    }
+    .cal-dow {
+      color: var(--text-muted);
+      font-size: 11px;
+      padding: 4px 0;
+      font-weight: 700;
+    }
+    .cal-day {
+      padding: 6px 0;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      position: relative;
+      transition: background-color 0.12s ease;
+    }
+    .cal-day:hover { background: var(--accent-soft); }
+    .cal-day.today {
+      border: 1px solid var(--accent);
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .cal-day.selected {
+      background: var(--accent);
+      color: #ffffff;
+      font-weight: 700;
+      border-color: var(--accent);
+    }
+    .cal-day.has-memo::after {
+      content: "";
+      width: 5px;
+      height: 5px;
+      background: #d97706;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 2px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .cal-day.selected.has-memo::after { background: #fde68a; }
+
+    .gcal-box {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-light);
+      background: var(--bg-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .gcal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .gcal-events {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 124px;
+      overflow-y: auto;
+    }
+    .gcal-event-item {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-left: 3px solid var(--accent);
+      border-radius: var(--radius-sm);
+      padding: 6px 9px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .gcal-event-time {
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .gcal-add-row {
+      display: grid;
+      grid-template-columns: 82px 1fr auto;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .memo-box {
+      flex: 1;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 155px;
+    }
+    .memo-date-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+    textarea {
+      flex: 1;
+      width: 100%;
+      resize: vertical;
+      border: 1px solid var(--border-mid);
+      border-radius: var(--radius-md);
+      padding: 9px 10px;
+      font-family: inherit;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text-primary);
+      background: var(--bg-surface);
+    }
+    textarea:focus, input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.16);
+    }
+    .memo-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .center-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+    .add-form {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 10px;
+      display: grid;
+      grid-template-columns: 108px 1fr 1fr auto;
+      gap: 8px;
+      align-items: center;
+    }
+    @media (max-width: 900px) {
+      .add-form { grid-template-columns: 1fr; }
+    }
+    input, select {
+      border: 1px solid var(--border-mid);
+      border-radius: var(--radius-sm);
+      padding: 6px 9px;
+      font-size: 12px;
+      font-family: inherit;
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      min-width: 0;
+    }
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .filter-bar input { flex: 1; }
+
+    .doc-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      overflow-y: auto;
+      max-height: 445px;
+    }
+    .doc-row {
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 9px 11px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: var(--bg-surface);
+      cursor: grab;
+      transition: border-color 0.12s ease, background-color 0.12s ease;
+    }
+    .doc-row:active { cursor: grabbing; }
+    .doc-row:hover { background: var(--bg-subtle); border-color: var(--border-mid); }
+    .doc-row.dragging { opacity: 0.45; border-style: dashed; }
+
+    .drag-handle {
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      user-select: none;
+      cursor: grab;
+      padding: 2px 3px;
+      border-radius: 4px;
+    }
+    .drag-handle:hover { color: var(--text-primary); background: var(--bg-muted); }
+
+    .type-tag {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--bg-muted);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-light);
+    }
+    .type-tag.folder { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-border); }
+    .type-tag.excel { background: var(--success-soft); color: var(--success); border-color: rgba(16, 185, 129, 0.35); }
+    .type-tag.word { background: rgba(139, 92, 246, 0.14); color: #a78bfa; border-color: rgba(139, 92, 246, 0.35); }
+    body:not(.dark-mode) .type-tag.word { background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe; }
+
+    .doc-info { min-width: 0; flex: 1; }
+    .doc-title {
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .doc-name-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .doc-path {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+      padding-left: 20px;
+    }
+    .doc-actions { display: flex; gap: 5px; flex-shrink: 0; }
+
+    .right-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .fav-dropzone {
+      border: 1.5px dashed var(--border-mid);
+      background: var(--bg-subtle);
+      border-radius: var(--radius-md);
+      padding: 10px;
+      transition: all 0.15s ease;
+      min-height: 148px;
+    }
+    .fav-dropzone.drag-over {
+      border-style: solid;
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      box-shadow: inset 0 0 0 1px var(--accent);
+    }
+    .drop-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 6px 8px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      margin-bottom: 8px;
+    }
+    .section-sub {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      margin-bottom: 7px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .fav-list, .link-list { display: flex; flex-direction: column; gap: 6px; }
+    .fav-card {
+      border: 1px solid var(--accent-border);
+      background: var(--bg-surface);
+      border-radius: var(--radius-md);
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      cursor: grab;
+      box-shadow: var(--shadow-sm);
+    }
+    .fav-card:active { cursor: grabbing; }
+    .fav-card.dragging { opacity: 0.45; border-style: dashed; }
+    .fav-card.drag-target-top { border-top: 3px solid var(--accent); }
+    .fav-card.drag-target-bottom { border-bottom: 3px solid var(--accent); }
+
+    .link-card {
+      border: 1px solid var(--border-light);
+      background: var(--bg-subtle);
+      border-radius: var(--radius-md);
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .empty {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 12px;
+      padding: 16px 8px;
+      line-height: 1.55;
+    }
+
+    .widget-section {
+      margin: 0 14px 18px 14px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .widget-section-header {
+      background: var(--navy-900);
+      color: #f8fafc;
+      padding: 10px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .widget-canvas {
+      position: relative;
+      min-height: 540px;
+      width: 100%;
+      background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+      background-size: 20px 20px;
+      background-color: var(--bg-canvas);
+      overflow: auto;
+    }
+    .widget-canvas.drop-highlight {
+      outline: 2px dashed var(--accent);
+      outline-offset: -6px;
+      background-color: var(--accent-soft);
+    }
+    .canvas-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      gap: 6px;
+      pointer-events: none;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .w-card {
+      position: absolute;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-mid);
+      border-radius: 10px;
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      min-width: 240px;
+      min-height: 150px;
+      overflow: hidden;
+      z-index: 2;
+    }
+    .w-card.active-drag {
+      z-index: 20;
+      box-shadow: 0 16px 30px -6px rgba(29, 78, 216, 0.28);
+      border-color: var(--accent);
+    }
+    .w-header {
+      background: var(--bg-muted);
+      border-bottom: 1px solid var(--border-light);
+      padding: 7px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      cursor: grab;
+      user-select: none;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .w-header:active { cursor: grabbing; }
+    .w-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+    .w-title-text {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .w-close {
+      background: transparent;
+      color: var(--text-muted);
+      padding: 1px 6px;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .w-close:hover { background: var(--danger-soft); color: var(--danger); }
+
+    .w-body {
+      flex: 1;
+      padding: 10px;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 12px;
+    }
+    .w-stat {
+      background: var(--accent-soft);
+      border: 1px solid var(--accent-border);
+      border-radius: var(--radius-sm);
+      padding: 7px 9px;
+      font-size: 12px;
+      color: var(--stat-text);
+      font-weight: 600;
+    }
+    .w-resize-handle {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 16px;
+      height: 16px;
+      cursor: nwse-resize;
+      user-select: none;
+      background: linear-gradient(135deg, transparent 52%, var(--text-muted) 52%, var(--text-muted) 62%, transparent 62%, transparent 74%, var(--text-muted) 74%, var(--text-muted) 84%, transparent 84%);
+    }
+    .w-resize-handle:hover {
+      background: linear-gradient(135deg, transparent 52%, var(--accent) 52%, var(--accent) 62%, transparent 62%, transparent 74%, var(--accent) 74%, var(--accent) 84%, transparent 84%);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.65);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 460px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 22px 35px -10px rgba(0, 0, 0, 0.45);
+      border: 1px solid var(--border-light);
+    }
+    .modal h3 { font-size: 15px; font-weight: 800; }
+    .widget-picker-modal {
+      max-width: 900px;
+      max-height: 86vh;
+    }
+    .picker-top {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .cat-tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+    .cat-tab {
+      background: var(--bg-muted);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-light);
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .cat-tab.active {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+    .picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
+      gap: 10px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .picker-item {
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      padding: 11px;
+      background: var(--bg-subtle);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 8px;
+      cursor: grab;
+      transition: border-color 0.12s ease, background-color 0.12s ease;
+    }
+    .picker-item:hover { border-color: var(--accent-border); background: var(--accent-soft); }
+    .picker-item-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+    .picker-item-desc { font-size: 11px; color: var(--text-secondary); line-height: 1.45; }
+    .picker-item-foot { display: flex; justify-content: space-between; align-items: center; }
+    .cat-tag {
+      font-size: 10px;
+      background: var(--bg-muted);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-light);
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <span class="brand-title">WD CORPORATION</span>
+      <span class="header-divider"></span>
+      <span class="badge">INTRANET WORKSPACE</span>
+    </div>
+    <div class="header-actions">
+      <button class="theme-btn small" id="btnToggleTheme" title="라이트 모드 / 다크 모드 전환">다크 모드</button>
+      <button class="widget-btn small" id="btnOpenWidgets">위젯 (30종)</button>
+      <span class="status-pill" id="gcalUserStatus">Google 캘린더 미연동</span>
+      <button class="google-btn small" id="btnGoogleAuth">Google 로그인</button>
+      <button class="ghost small" id="btnGoogleConfig">Google 설정</button>
+      <button class="ghost small" id="btnExport">백업 (.json)</button>
+      <button class="ghost small" id="btnImportTrigger">복원</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;" />
+    </div>
+  </header>
+
+  <div class="notice-bar">
+    <span><strong>안내:</strong> 상단에서 라이트/다크 모드를 전환할 수 있으며, 위젯 캔버스에서 격자 스냅과 기본 프리셋 배치를 사용할 수 있습니다.</span>
+    <span class="toast-text" id="toastMsg"></span>
+  </div>
+
+  <div class="main-grid">
+    <section class="panel">
+      <div class="panel-header">
+        <span>일정 캘린더 및 메모</span>
+        <span id="selectedDateBadge" style="font-size:11px; color:var(--accent); font-weight:700;"></span>
+      </div>
+
+      <div class="cal-box">
+        <div class="cal-nav">
+          <button class="secondary small" id="prevMonth">이전</button>
+          <span id="calTitle"></span>
+          <button class="secondary small" id="nextMonth">다음</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+
+      <div class="gcal-box">
+        <div class="gcal-header">
+          <span>GOOGLE CALENDAR 일정</span>
+          <button class="secondary small" id="btnRefreshGcal" disabled>새로고침</button>
+        </div>
+        <div class="gcal-events" id="gcalEventsList">
+          <div style="font-size:11px; color:var(--text-muted); padding:4px 0;">
+            상단 <strong>[Google 로그인]</strong> 후 선택한 날짜의 일정을 조회하거나 추가할 수 있습니다.
+          </div>
+        </div>
+        <form class="gcal-add-row" id="gcalAddForm">
+          <input type="time" id="gcalEventTime" value="09:00" title="시작 시간 (비우면 종일 일정)" />
+          <input type="text" id="gcalEventTitle" placeholder="새 Google 일정 제목 입력..." required />
+          <button type="submit" class="small" id="btnAddGcalEvent" disabled>일정 추가</button>
+        </form>
+      </div>
+
+      <div class="memo-box">
+        <div class="memo-date-label" id="memoDateLabel">메모</div>
+        <textarea id="memoInput" placeholder="선택한 날짜의 개인 업무 메모를 입력하세요..."></textarea>
+        <div class="memo-footer">
+          <span id="memoStatus">준비됨</span>
+          <button id="btnSaveMemo">메모 저장</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <span>NAS 주요 폴더 및 문서 목록</span>
+        <span class="panel-submeta" id="docCount">0개 항목</span>
+      </div>
+      <div class="center-body">
+        <form class="add-form" id="docForm">
+          <select id="docType">
+            <option value="folder">폴더</option>
+            <option value="excel">Excel</option>
+            <option value="word">Word/문서</option>
+            <option value="other">기타 파일</option>
+          </select>
+          <input type="text" id="docName" placeholder="이름 (예: 2026년 견적서 모음)" required />
+          <input type="text" id="docPath" placeholder="NAS 경로 (예: Z:\영업부\견적서\2026)" required />
+          <button type="submit">목록 추가</button>
+        </form>
+
+        <div class="filter-bar">
+          <input type="text" id="docSearch" placeholder="이름 또는 경로로 검색..." />
+          <select id="docFilterType">
+            <option value="all">전체 유형</option>
+            <option value="folder">폴더만</option>
+            <option value="excel">Excel</option>
+            <option value="word">Word/문서</option>
+            <option value="other">기타</option>
+          </select>
+        </div>
+
+        <div class="doc-list" id="docList"></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <span>즐겨찾기 및 업무 링크</span>
+        <span class="panel-submeta">드래그 추가 · 순서 정렬</span>
+      </div>
+      <div class="right-body">
+        <div>
+          <div class="section-sub">
+            <span>즐겨찾기 폴더 및 문서</span>
+            <span class="panel-submeta" id="favCount">0개</span>
+          </div>
+          <div class="fav-dropzone" id="favDropzone">
+            <div class="drop-hint">목록이나 파일/폴더를 끌어다 놓거나, :: 핸들로 순서를 바꾸세요</div>
+            <div class="fav-list" id="favList"></div>
+          </div>
+        </div>
+
+        <hr style="border:none; border-top:1px solid var(--border-light);" />
+
+        <div>
+          <div class="section-sub">
+            <span>자주 쓰는 웹 링크</span>
+          </div>
+          <form id="linkForm" style="display:flex; gap:6px; margin-bottom:8px;">
+            <input type="text" id="linkTitle" placeholder="사이트명" style="width:100px;" required />
+            <input type="url" id="linkUrl" placeholder="https://..." style="flex:1;" required />
+            <button type="submit" class="small">추가</button>
+          </form>
+          <div class="link-list" id="linkList"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="widget-section">
+    <div class="widget-section-header">
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <strong>업무 위젯 캔버스</strong>
+        <span style="color:#cbd5e1;">제목줄 드래그로 위치 이동 · 우측 하단 코너 드래그로 크기 조절</span>
+      </div>
+      <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+        <span id="activeWidgetCount" style="color:#93c5fd; font-weight:700;">0개 위젯 배치됨</span>
+        <button class="snap-btn small active" id="btnToggleSnap" title="20px 격자 스냅 켜기/끄기">격자 스냅: ON</button>
+        <button class="preset-btn small" id="btnApplyPreset" title="사내 업무용 기본 위젯 6종 자동 배치">기본 프리셋 배치</button>
+        <button class="widget-btn small" id="btnOpenWidgets2">+ 위젯 추가</button>
+        <button class="ghost small" id="btnClearWidgets">모두 지우기</button>
+      </div>
+    </div>
+    <div class="widget-canvas" id="widgetCanvas">
+      <div class="canvas-placeholder" id="canvasPlaceholder">
+        <div>상단의 <strong>[기본 프리셋 배치]</strong>를 누르거나 <strong>[위젯 (30종)]</strong> 버튼으로 위젯을 추가해 보세요.</div>
+        <div style="font-size:11px;">위젯 제목줄을 드래그해 원하는 위치에 놓고, 우측 하단 코너를 드래그해 크기를 조절할 수 있습니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="modal-backdrop" id="widgetPickerModal">
+    <div class="modal widget-picker-modal">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3>사내 업무 위젯 모음 (30종)</h3>
+        <button class="secondary small" id="btnClosePicker">닫기</button>
+      </div>
+      <p style="font-size:12px; color:var(--text-secondary);">
+        원하는 위젯의 <strong>[+ 추가]</strong>를 누르거나, 카드를 아래 위젯 캔버스에 드래그해 놓으세요.
+      </p>
+      <div class="picker-top">
+        <input type="text" id="widgetSearchInput" placeholder="위젯 이름 또는 기능 검색..." style="flex:1; min-width:180px;" />
+        <div class="cat-tabs" id="widgetCatTabs"></div>
+      </div>
+      <div class="picker-grid" id="widgetPickerGrid"></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="configModal">
+    <div class="modal">
+      <h3>Google Calendar API 설정</h3>
+      <p style="font-size:12px; color:var(--text-secondary); line-height:1.5;">
+        Google Cloud Console에서 발급받은 <strong>웹 애플리케이션 OAuth 클라이언트 ID</strong>를 입력하세요.
+      </p>
+      <input type="text" id="inputGoogleClientId" placeholder="예: 1234567890-abcdefg.apps.googleusercontent.com" />
+      <div style="display:flex; justify-content:flex-end; gap:8px;">
+        <button class="secondary" id="btnCloseModal">닫기</button>
+        <button id="btnSaveClientId">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEYS = {
+      docs: 'wd_corp_docs_v1',
+      favs: 'wd_corp_favs_v1',
+      memos: 'wd_corp_memos_v1',
+      links: 'wd_corp_links_v1',
+      gcalClientId: 'wd_corp_gcal_client_id',
+      widgets: 'wd_corp_widgets_v1',
+      gridSnap: 'wd_corp_grid_snap_v1',
+      theme: 'wd_corp_theme_v1'
+    };
+
+    const GRID_SIZE = 20;
+
+    let docs = JSON.parse(localStorage.getItem(STORAGE_KEYS.docs) || '[]');
+    let favIds = JSON.parse(localStorage.getItem(STORAGE_KEYS.favs) || '[]');
+    let memos = JSON.parse(localStorage.getItem(STORAGE_KEYS.memos) || '{}');
+    let links = JSON.parse(localStorage.getItem(STORAGE_KEYS.links) || '[]');
+    let placedWidgets = JSON.parse(localStorage.getItem(STORAGE_KEYS.widgets) || '[]');
+    let googleClientId = localStorage.getItem(STORAGE_KEYS.gcalClientId) || '';
+    let gridSnapEnabled = localStorage.getItem(STORAGE_KEYS.gridSnap) !== 'false';
+    let isDarkMode = localStorage.getItem(STORAGE_KEYS.theme) === 'dark';
+
+    let viewYear, viewMonth;
+    let selectedDateStr = formatDate(new Date());
+    let draggingFavId = null;
+
+    let tokenClient = null;
+    let googleAccessToken = null;
+    const GCAL_SCOPES = 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly';
+
+    function applyThemeUI() {
+      document.body.classList.toggle('dark-mode', isDarkMode);
+      const btn = document.getElementById('btnToggleTheme');
+      btn.textContent = isDarkMode ? '라이트 모드' : '다크 모드';
+    }
+
+    document.getElementById('btnToggleTheme').addEventListener('click', () => {
+      isDarkMode = !isDarkMode;
+      localStorage.setItem(STORAGE_KEYS.theme, isDarkMode ? 'dark' : 'light');
+      applyThemeUI();
+      showToast(isDarkMode ? '다크 모드로 전환되었습니다.' : '라이트 모드로 전환되었습니다.');
+    });
+
+    function snapValue(val) {
+      if (!gridSnapEnabled) return Math.round(val);
+      return Math.round(val / GRID_SIZE) * GRID_SIZE;
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById('toastMsg');
+      el.textContent = msg;
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => { el.textContent = ''; }, 2800);
+    }
+
+    function copyText(text, label = '내용') {
+      navigator.clipboard?.writeText(text).then(() => {
+        showToast(`${label}가 클립보드에 복사되었습니다.`);
+      }).catch(() => {
+        prompt('아래 내용을 복사하세요:', text);
+      });
+    }
+
+    function formatDate(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function typeBadgeHtml(type) {
+      if (type === 'folder') return `<span class="type-tag folder">FOLDER</span>`;
+      if (type === 'excel') return `<span class="type-tag excel">EXCEL</span>`;
+      if (type === 'word') return `<span class="type-tag word">DOC</span>`;
+      return `<span class="type-tag">FILE</span>`;
+    }
+
+    function detectTypeByName(name) {
+      const lower = name.toLowerCase();
+      if (lower.endsWith('.xlsx') || lower.endsWith('.xls') || lower.endsWith('.csv')) return 'excel';
+      if (lower.endsWith('.docx') || lower.endsWith('.doc') || lower.endsWith('.hwp') || lower.endsWith('.hwpx') || lower.endsWith('.pdf')) return 'word';
+      if (!lower.includes('.')) return 'folder';
+      return 'other';
+    }
+
+    function saveAll() {
+      localStorage.setItem(STORAGE_KEYS.docs, JSON.stringify(docs));
+      localStorage.setItem(STORAGE_KEYS.favs, JSON.stringify(favIds));
+      localStorage.setItem(STORAGE_KEYS.memos, JSON.stringify(memos));
+      localStorage.setItem(STORAGE_KEYS.links, JSON.stringify(links));
+      localStorage.setItem(STORAGE_KEYS.widgets, JSON.stringify(placedWidgets));
+      localStorage.setItem(STORAGE_KEYS.gridSnap, String(gridSnapEnabled));
+      localStorage.setItem(STORAGE_KEYS.theme, isDarkMode ? 'dark' : 'light');
+    }
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function initGoogleTokenClient() {
+      if (!googleClientId || !window.google?.accounts?.oauth2) return;
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: googleClientId,
+        scope: GCAL_SCOPES,
+        callback: async (tokenResponse) => {
+          if (tokenResponse.error) {
+            alert('Google 로그인 오류: ' + tokenResponse.error);
+            return;
+          }
+          googleAccessToken = tokenResponse.access_token;
+          const statusEl = document.getElementById('gcalUserStatus');
+          statusEl.textContent = 'Google 캘린더 연결됨';
+          statusEl.classList.add('connected');
+          document.getElementById('btnGoogleAuth').textContent = '연결 갱신';
+          document.getElementById('btnRefreshGcal').disabled = false;
+          document.getElementById('btnAddGcalEvent').disabled = false;
+          showToast('Google 캘린더에 연결되었습니다.');
+          await fetchGoogleEventsForDate(selectedDateStr);
+        }
+      });
+    }
+
+    document.getElementById('btnGoogleAuth').addEventListener('click', () => {
+      if (!googleClientId) {
+        document.getElementById('configModal').classList.add('open');
+        return;
+      }
+      if (!tokenClient) initGoogleTokenClient();
+      if (!tokenClient) {
+        alert('Google 인증 스크립트가 아직 로드되지 않았습니다. 잠시 후 다시 시도하세요.');
+        return;
+      }
+      tokenClient.requestAccessToken({ prompt: googleAccessToken ? '' : 'consent' });
+    });
+
+    document.getElementById('btnGoogleConfig').addEventListener('click', () => {
+      document.getElementById('inputGoogleClientId').value = googleClientId;
+      document.getElementById('configModal').classList.add('open');
+    });
+
+    document.getElementById('btnCloseModal').addEventListener('click', () => {
+      document.getElementById('configModal').classList.remove('open');
+    });
+
+    document.getElementById('btnSaveClientId').addEventListener('click', () => {
+      const val = document.getElementById('inputGoogleClientId').value.trim();
+      googleClientId = val;
+      localStorage.setItem(STORAGE_KEYS.gcalClientId, val);
+      tokenClient = null;
+      initGoogleTokenClient();
+      document.getElementById('configModal').classList.remove('open');
+      showToast('Google Client ID가 저장되었습니다.');
+    });
+
+    async function fetchGoogleEventsForDate(dateStr) {
+      const container = document.getElementById('gcalEventsList');
+      if (!googleAccessToken) return;
+
+      container.innerHTML = `<div style="font-size:11px; color:var(--text-muted);">일정을 불러오는 중...</div>`;
+      const timeMin = `${dateStr}T00:00:00+09:00`;
+      const timeMax = `${dateStr}T23:59:59+09:00`;
+      const url = `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${encodeURIComponent(timeMin)}&timeMax=${encodeURIComponent(timeMax)}&singleEvents=true&orderBy=startTime`;
+
+      try {
+        const res = await fetch(url, { headers: { Authorization: `Bearer ${googleAccessToken}` } });
+        if (!res.ok) {
+          if (res.status === 401) {
+            googleAccessToken = null;
+            const statusEl = document.getElementById('gcalUserStatus');
+            statusEl.textContent = '세션 만료 (재로그인 필요)';
+            statusEl.classList.remove('connected');
+          }
+          throw new Error(`HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        const items = data.items || [];
+
+        if (!items.length) {
+          container.innerHTML = `<div style="font-size:11px; color:var(--text-muted); padding:4px 0;">${dateStr}에 등록된 Google 일정이 없습니다.</div>`;
+          return;
+        }
+
+        container.innerHTML = '';
+        items.forEach((ev) => {
+          const row = document.createElement('div');
+          row.className = 'gcal-event-item';
+
+          let timeText = '종일';
+          if (ev.start?.dateTime) {
+            const dt = new Date(ev.start.dateTime);
+            timeText = dt.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false });
+          }
+
+          row.innerHTML = `
+            <div style="min-width:0; flex:1;">
+              <span class="gcal-event-time">${timeText}</span>
+              <span style="margin-left:6px; font-weight:600;">${escapeHtml(ev.summary || '(제목 없음)')}</span>
+            </div>
+          `;
+          if (ev.htmlLink) {
+            const linkBtn = document.createElement('button');
+            linkBtn.className = 'secondary small';
+            linkBtn.textContent = '보기';
+            linkBtn.onclick = () => window.open(ev.htmlLink, '_blank', 'noopener');
+            row.appendChild(linkBtn);
+          }
+          container.appendChild(row);
+        });
+      } catch (err) {
+        container.innerHTML = `<div style="font-size:11px; color:var(--danger);">일정 조회 실패: ${escapeHtml(err.message)}</div>`;
+      }
+    }
+
+    document.getElementById('btnRefreshGcal').addEventListener('click', () => {
+      fetchGoogleEventsForDate(selectedDateStr);
+    });
+
+    document.getElementById('gcalAddForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!googleAccessToken) {
+        alert('먼저 상단의 [Google 로그인] 버튼을 눌러 계정을 연결해주세요.');
+        return;
+      }
+
+      const title = document.getElementById('gcalEventTitle').value.trim();
+      const timeVal = document.getElementById('gcalEventTime').value;
+      if (!title) return;
+
+      let eventBody = { summary: title };
+      if (timeVal) {
+        const startIso = `${selectedDateStr}T${timeVal}:00+09:00`;
+        const endDateObj = new Date(new Date(startIso).getTime() + 60 * 60 * 1000);
+        eventBody.start = { dateTime: startIso, timeZone: 'Asia/Seoul' };
+        eventBody.end = { dateTime: endDateObj.toISOString(), timeZone: 'Asia/Seoul' };
+      } else {
+        const nextDay = new Date(new Date(`${selectedDateStr}T00:00:00`).getTime() + 24 * 60 * 60 * 1000);
+        eventBody.start = { date: selectedDateStr };
+        eventBody.end = { date: formatDate(nextDay) };
+      }
+
+      try {
+        const res = await fetch('https://www.googleapis.com/calendar/v3/calendars/primary/events', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${googleAccessToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(eventBody)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+        document.getElementById('gcalEventTitle').value = '';
+        showToast('Google 캘린더에 일정이 등록되었습니다.');
+        await fetchGoogleEventsForDate(selectedDateStr);
+      } catch (err) {
+        alert('일정 등록에 실패했습니다: ' + err.message);
+      }
+    });
+
+    function initCalendar() {
+      const now = new Date();
+      viewYear = now.getFullYear();
+      viewMonth = now.getMonth();
+      renderCalendar();
+      selectDate(selectedDateStr);
+    }
+
+    function renderCalendar() {
+      const titleEl = document.getElementById('calTitle');
+      const gridEl = document.getElementById('calGrid');
+      titleEl.textContent = `${viewYear}년 ${viewMonth + 1}월`;
+      gridEl.innerHTML = '';
+
+      ['일', '월', '화', '수', '목', '금', '토'].forEach((d) => {
+        const div = document.createElement('div');
+        div.className = 'cal-dow';
+        div.textContent = d;
+        gridEl.appendChild(div);
+      });
+
+      const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+      const lastDate = new Date(viewYear, viewMonth + 1, 0).getDate();
+      const todayStr = formatDate(new Date());
+
+      for (let i = 0; i < firstDay; i++) gridEl.appendChild(document.createElement('div'));
+
+      for (let day = 1; day <= lastDate; day++) {
+        const dStr = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        const cell = document.createElement('div');
+        cell.className = 'cal-day';
+        cell.textContent = day;
+        if (dStr === todayStr) cell.classList.add('today');
+        if (dStr === selectedDateStr) cell.classList.add('selected');
+        if (memos[dStr] && memos[dStr].trim()) cell.classList.add('has-memo');
+
+        cell.addEventListener('click', () => selectDate(dStr));
+        gridEl.appendChild(cell);
+      }
+    }
+
+    function selectDate(dStr) {
+      selectedDateStr = dStr;
+      document.getElementById('selectedDateBadge').textContent = dStr;
+      document.getElementById('memoDateLabel').textContent = `${dStr} 개인 업무 메모`;
+      document.getElementById('memoInput').value = memos[dStr] || '';
+      document.getElementById('memoStatus').textContent = '불러옴';
+      renderCalendar();
+      if (googleAccessToken) fetchGoogleEventsForDate(dStr);
+    }
+
+    document.getElementById('btnSaveMemo').addEventListener('click', () => {
+      const val = document.getElementById('memoInput').value;
+      if (val.trim()) memos[selectedDateStr] = val;
+      else delete memos[selectedDateStr];
+      saveAll();
+      renderCalendar();
+      document.getElementById('memoStatus').textContent = '저장됨';
+      showToast(`${selectedDateStr} 메모가 저장되었습니다.`);
+    });
+
+    document.getElementById('prevMonth').addEventListener('click', () => {
+      viewMonth--;
+      if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+      renderCalendar();
+    });
+
+    document.getElementById('nextMonth').addEventListener('click', () => {
+      viewMonth++;
+      if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+      renderCalendar();
+    });
+
+    document.getElementById('docForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const type = document.getElementById('docType').value;
+      const name = document.getElementById('docName').value.trim();
+      const docPath = document.getElementById('docPath').value.trim();
+      if (!name || !docPath) return;
+
+      docs.unshift({ id: String(Date.now()), type, name, path: docPath });
+      saveAll();
+      document.getElementById('docName').value = '';
+      document.getElementById('docPath').value = '';
+      renderDocs();
+      renderFavs();
+      showToast('목록에 추가되었습니다.');
+    });
+
+    function addFavoriteById(id) {
+      if (!favIds.includes(id)) {
+        favIds.push(id);
+        saveAll();
+        renderDocs();
+        renderFavs();
+        showToast('즐겨찾기에 추가되었습니다.');
+      } else {
+        showToast('이미 즐겨찾기에 등록된 항목입니다.');
+      }
+    }
+
+    function toggleFav(id) {
+      const idx = favIds.indexOf(id);
+      if (idx >= 0) favIds.splice(idx, 1);
+      else favIds.push(id);
+      saveAll();
+      renderDocs();
+      renderFavs();
+    }
+
+    function deleteDoc(id) {
+      docs = docs.filter((d) => d.id !== id);
+      favIds = favIds.filter((fid) => fid !== id);
+      saveAll();
+      renderDocs();
+      renderFavs();
+    }
+
+    function clearFavDropIndicators() {
+      document.querySelectorAll('.fav-card.drag-target-top, .fav-card.drag-target-bottom').forEach((el) => {
+        el.classList.remove('drag-target-top', 'drag-target-bottom');
+      });
+    }
+
+    function renderDocs() {
+      const q = document.getElementById('docSearch').value.trim().toLowerCase();
+      const filterType = document.getElementById('docFilterType').value;
+      const listEl = document.getElementById('docList');
+
+      const filtered = docs.filter((d) => {
+        const matchType = filterType === 'all' || d.type === filterType;
+        const matchQuery = !q || d.name.toLowerCase().includes(q) || d.path.toLowerCase().includes(q);
+        return matchType && matchQuery;
+      });
+
+      document.getElementById('docCount').textContent = `${filtered.length}개 항목`;
+      listEl.innerHTML = '';
+
+      if (!filtered.length) {
+        listEl.innerHTML = `<div class="empty">등록된 항목이 없습니다. 상단 입력란에서 자주 쓰는 NAS 폴더나 문서 경로를 추가해 보세요.</div>`;
+        return;
+      }
+
+      filtered.forEach((d) => {
+        const isFav = favIds.includes(d.id);
+        const row = document.createElement('div');
+        row.className = 'doc-row';
+        row.draggable = true;
+
+        row.addEventListener('dragstart', (e) => {
+          draggingFavId = null;
+          row.classList.add('dragging');
+          e.dataTransfer.setData('text/plain', d.id);
+          e.dataTransfer.effectAllowed = 'copy';
+        });
+        row.addEventListener('dragend', () => row.classList.remove('dragging'));
+
+        const info = document.createElement('div');
+        info.className = 'doc-info';
+        info.innerHTML = `
+          <div class="doc-title">
+            <span class="drag-handle" title="끌어서 즐겨찾기에 추가">::</span>
+            ${typeBadgeHtml(d.type)}
+            <span class="doc-name-text">${escapeHtml(d.name)}</span>
+          </div>
+          <div class="doc-path" title="${escapeHtml(d.path)}">${escapeHtml(d.path)}</div>
+        `;
+
+        const actions = document.createElement('div');
+        actions.className = 'doc-actions';
+
+        const favBtn = document.createElement('button');
+        favBtn.className = 'secondary small';
+        favBtn.textContent = isFav ? '즐겨찾기됨' : '즐겨찾기';
+        favBtn.onclick = () => toggleFav(d.id);
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'small';
+        copyBtn.textContent = '경로 복사';
+        copyBtn.onclick = () => copyText(d.path, '폴더/파일 경로');
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'danger';
+        delBtn.textContent = '삭제';
+        delBtn.onclick = () => deleteDoc(d.id);
+
+        actions.append(favBtn, copyBtn, delBtn);
+        row.append(info, actions);
+        listEl.appendChild(row);
+      });
+    }
+
+    const favDropzone = document.getElementById('favDropzone');
+
+    favDropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = draggingFavId ? 'move' : 'copy';
+      favDropzone.classList.add('drag-over');
+    });
+
+    favDropzone.addEventListener('dragleave', (e) => {
+      if (!favDropzone.contains(e.relatedTarget)) {
+        favDropzone.classList.remove('drag-over');
+        clearFavDropIndicators();
+      }
+    });
+
+    favDropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      favDropzone.classList.remove('drag-over');
+      clearFavDropIndicators();
+
+      if (draggingFavId) {
+        draggingFavId = null;
+        return;
+      }
+
+      const draggedDocId = e.dataTransfer.getData('text/plain');
+      if (draggedDocId && docs.some((d) => d.id === draggedDocId)) {
+        addFavoriteById(draggedDocId);
+        return;
+      }
+
+      const droppedFiles = e.dataTransfer.files;
+      if (droppedFiles && droppedFiles.length > 0) {
+        Array.from(droppedFiles).forEach((file) => {
+          const newId = String(Date.now() + Math.random());
+          docs.unshift({
+            id: newId,
+            type: detectTypeByName(file.name),
+            name: file.name,
+            path: file.path || file.name
+          });
+          favIds.push(newId);
+        });
+        saveAll();
+        renderDocs();
+        renderFavs();
+        showToast(`${droppedFiles.length}개 항목이 즐겨찾기에 추가되었습니다.`);
+      }
+    });
+
+    function renderFavs() {
+      const listEl = document.getElementById('favList');
+      const favDocs = favIds.map((id) => docs.find((d) => d.id === id)).filter(Boolean);
+      if (favDocs.length !== favIds.length) {
+        favIds = favDocs.map((d) => d.id);
+        saveAll();
+      }
+
+      document.getElementById('favCount').textContent = `${favDocs.length}개`;
+      listEl.innerHTML = '';
+
+      if (!favDocs.length) {
+        listEl.innerHTML = `<div class="empty">즐겨찾기 항목이 없습니다. 항목을 이 상자 안으로 드래그해 보세요.</div>`;
+        return;
+      }
+
+      favDocs.forEach((d) => {
+        const card = document.createElement('div');
+        card.className = 'fav-card';
+        card.draggable = true;
+
+        card.addEventListener('dragstart', (e) => {
+          e.stopPropagation();
+          draggingFavId = d.id;
+          card.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+        });
+
+        card.addEventListener('dragend', () => {
+          draggingFavId = null;
+          card.classList.remove('dragging');
+          clearFavDropIndicators();
+        });
+
+        card.addEventListener('dragover', (e) => {
+          if (!draggingFavId || draggingFavId === d.id) return;
+          e.preventDefault();
+          e.stopPropagation();
+          clearFavDropIndicators();
+          const rect = card.getBoundingClientRect();
+          card.classList.add(e.clientY < rect.top + rect.height / 2 ? 'drag-target-top' : 'drag-target-bottom');
+        });
+
+        card.addEventListener('drop', (e) => {
+          if (!draggingFavId || draggingFavId === d.id) return;
+          e.preventDefault();
+          e.stopPropagation();
+          const rect = card.getBoundingClientRect();
+          const insertAfter = e.clientY >= rect.top + rect.height / 2;
+          const fromIndex = favIds.indexOf(draggingFavId);
+          if (fromIndex === -1) return;
+          favIds.splice(fromIndex, 1);
+          let targetIndex = favIds.indexOf(d.id);
+          if (targetIndex === -1) return;
+          if (insertAfter) targetIndex += 1;
+          favIds.splice(targetIndex, 0, draggingFavId);
+          draggingFavId = null;
+          clearFavDropIndicators();
+          saveAll();
+          renderFavs();
+          showToast('즐겨찾기 순서가 변경되었습니다.');
+        });
+
+        card.innerHTML = `
+          <div style="min-width:0; flex:1; display:flex; align-items:center; gap:6px;">
+            <span class="drag-handle" title="위아래로 끌어 순서 변경">::</span>
+            ${typeBadgeHtml(d.type)}
+            <div style="min-width:0; flex:1;">
+              <div style="font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(d.name)}</div>
+              <div style="font-size:11px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(d.path)}</div>
+            </div>
+          </div>
+        `;
+
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'small';
+        copyBtn.textContent = '복사';
+        copyBtn.onclick = () => copyText(d.path, '즐겨찾기 경로');
+
+        const rmBtn = document.createElement('button');
+        rmBtn.className = 'danger';
+        rmBtn.textContent = '해제';
+        rmBtn.onclick = () => toggleFav(d.id);
+
+        card.append(copyBtn, rmBtn);
+        listEl.appendChild(card);
+      });
+    }
+
+    document.getElementById('linkForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const title = document.getElementById('linkTitle').value.trim();
+      const url = document.getElementById('linkUrl').value.trim();
+      if (!title || !url) return;
+      links.push({ id: String(Date.now()), title, url });
+      saveAll();
+      document.getElementById('linkTitle').value = '';
+      document.getElementById('linkUrl').value = '';
+      renderLinks();
+    });
+
+    function renderLinks() {
+      const el = document.getElementById('linkList');
+      el.innerHTML = '';
+      if (!links.length) {
+        el.innerHTML = `<div class="empty">자주 접속하는 사내 및 업무 사이트를 추가해 두세요.</div>`;
+        return;
+      }
+      links.forEach((l) => {
+        const card = document.createElement('div');
+        card.className = 'link-card';
+        card.innerHTML = `
+          <div style="min-width:0; flex:1;">
+            <div style="font-size:12px; font-weight:700;">${escapeHtml(l.title)}</div>
+            <div style="font-size:11px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(l.url)}</div>
+          </div>
+        `;
+        const openBtn = document.createElement('button');
+        openBtn.className = 'small';
+        openBtn.textContent = '열기';
+        openBtn.onclick = () => window.open(l.url, '_blank', 'noopener');
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'danger';
+        delBtn.textContent = '삭제';
+        delBtn.onclick = () => {
+          links = links.filter((x) => x.id !== l.id);
+          saveAll();
+          renderLinks();
+        };
+        card.append(openBtn, delBtn);
+        el.appendChild(card);
+      });
+    }
+
+    const WIDGET_CATALOG = [
+      { type: 'vat_calc', title: 'VAT·공급가액 계산기', cat: '재무·견적', desc: '공급가액과 부가세(10%), 합계를 즉시 계산합니다.' },
+      { type: 'margin_calc', title: '마진율·할인가 계산기', cat: '재무·견적', desc: '원가와 판매가로 순이익 및 마진율(%)을 계산합니다.' },
+      { type: 'wage_calc', title: '인건비·일당 환산기', cat: '재무·견적', desc: '월급·일당·시간 단가 환산 메모 계산기입니다.' },
+      { type: 'quote_sum', title: '견적서 항목 합계기', cat: '재무·견적', desc: '단가 × 수량 합계와 부가세 포함 총액을 계산합니다.' },
+      { type: 'mini_calc', title: '빠른 계산기', cat: '재무·견적', desc: '사칙연산 수식을 입력해 즉시 결과를 확인합니다.' },
+
+      { type: 'todo_list', title: '오늘의 할 일(To-Do)', cat: '일정·업무관리', desc: '체크박스 할 일 목록을 추가하고 완료 관리합니다.' },
+      { type: 'dday_counter', title: '마감일 D-Day 카운터', cat: '일정·업무관리', desc: '중요 마감일까지 남은 일수(D-Day)를 표시합니다.' },
+      { type: 'pomodoro_timer', title: '업무 타이머', cat: '일정·업무관리', desc: '집중·회의 시간 측정용 카운트다운/스톱워치입니다.' },
+      { type: 'weekly_kpi', title: '주간 핵심 목표(KPI)', cat: '일정·업무관리', desc: '이번 주 핵심 목표와 달성률(%)을 기록합니다.' },
+      { type: 'meeting_notes', title: '회의 안건·결정사항', cat: '일정·업무관리', desc: '회의 핵심 내용과 후속 조치를 빠르게 적습니다.' },
+      { type: 'visit_checklist', title: '출장·방문 체크리스트', cat: '일정·업무관리', desc: '외근·출장 전 필수 준비물을 체크합니다.' },
+
+      { type: 'corp_info', title: '법인·사업자 정보 복사', cat: '문서·연락처', desc: '사업자번호, 계좌번호 등 사내 정보를 원클릭 복사합니다.' },
+      { type: 'snippet_copy', title: '상용구·인사말 모음', cat: '문서·연락처', desc: '자주 쓰는 안내 문구·인사말을 클릭해 복사합니다.' },
+      { type: 'dept_contacts', title: '사내 내선·담당자 메모', cat: '문서·연락처', desc: '부서별 내선번호와 담당자 정보를 메모합니다.' },
+      { type: 'client_memo', title: '거래처 빠른 메모', cat: '문서·연락처', desc: '주요 거래처 담당자 및 특이사항을 기록합니다.' },
+      { type: 'filename_gen', title: '파일명 규칙 생성기', cat: '문서·연락처', desc: '날짜_부서_문서명_버전 규칙으로 파일명을 만듭니다.' },
+      { type: 'mail_subject', title: '이메일 제목 빌더', cat: '문서·연락처', desc: '말머리·날짜·건명을 조합해 메일 제목을 생성합니다.' },
+      { type: 'nas_mini_fav', title: 'NAS 경로 메모', cat: '문서·연락처', desc: '자주 쓰는 공유 폴더 경로를 저장하고 복사합니다.' },
+      { type: 'doc_review_chk', title: '문서 검수 체크리스트', cat: '문서·연락처', desc: '발송 전 단가·부가세·첨부파일을 점검합니다.' },
+      { type: 'system_guide', title: '시스템 접속 가이드', cat: '문서·연락처', desc: '사내 시스템 주소 및 접속 안내 메모를 남깁니다.' },
+
+      { type: 'scratch_memo', title: '빠른 스크래치 메모', cat: '편의·유틸리티', desc: '떠오르는 메모를 자유롭게 적는 메모장입니다.' },
+      { type: 'char_counter', title: '글자 수 카운터', cat: '편의·유틸리티', desc: '문안의 글자 수(공백 포함/제외)를 세어줍니다.' },
+      { type: 'date_diff', title: '날짜 차이 계산기', cat: '편의·유틸리티', desc: '두 날짜 사이의 일수 차이를 계산합니다.' },
+      { type: 'world_clock', title: '시차·세계시간 확인', cat: '편의·유틸리티', desc: '한국(KST) 기준 주요 해외 시간을 보여줍니다.' },
+      { type: 'unit_converter', title: '단위 변환기', cat: '편의·유틸리티', desc: '길이(m/km), 무게(kg/t), 면적(㎡/평)을 변환합니다.' },
+      { type: 'percent_calc', title: '퍼센트·비율 계산기', cat: '편의·유틸리티', desc: '비율(%)과 증감률을 계산합니다.' },
+      { type: 'random_picker', title: '랜덤 추첨·순서 뽑기', cat: '편의·유틸리티', desc: '항목 중 무작위로 하나를 뽑아줍니다.' },
+      { type: 'quick_url_note', title: '바로가기 링크 노트', cat: '편의·유틸리티', desc: 'URL을 입력해 새 탭으로 바로 엽니다.' },
+      { type: 'daily_focus', title: '오늘의 한 줄 다짐', cat: '편의·유틸리티', desc: '오늘의 핵심 포커스 문장을 표시합니다.' },
+      { type: 'shortcut_cheat', title: '단축키 요약 시트', cat: '편의·유틸리티', desc: '자주 쓰는 업무 단축키를 모아 보여줍니다.' }
+    ];
+
+    const WIDGET_CATEGORIES = ['전체', '재무·견적', '일정·업무관리', '문서·연락처', '편의·유틸리티'];
+    let selectedWidgetCat = '전체';
+    let draggedCatalogType = null;
+
+    function defaultStateForWidget(type) {
+      switch (type) {
+        case 'vat_calc': return { supply: 100000 };
+        case 'margin_calc': return { cost: 70000, price: 100000 };
+        case 'wage_calc': return { monthly: 3000000 };
+        case 'quote_sum': return { unitPrice: 50000, qty: 3 };
+        case 'mini_calc': return { expr: '(120000 + 35000) * 1.1' };
+        case 'todo_list': return { items: [{ text: '주간 보고서 초안 작성', done: false }, { text: '거래처 견적 회신', done: true }] };
+        case 'dday_counter': return { targetName: '월간 마감', targetDate: '2026-11-30' };
+        case 'pomodoro_timer': return { seconds: 1500, running: false };
+        case 'weekly_kpi': return { goal: '주요 안건 처리 완료', progress: 65 };
+        case 'meeting_notes': return { text: '- 참석자:\n- 결정사항:\n- 후속조치:' };
+        case 'visit_checklist': return { items: [{ text: '노트북 및 충전기', done: false }, { text: '명함 및 서류', done: false }] };
+        case 'corp_info': return { corpName: 'WD Corporation', bizNo: '000-00-00000', bank: '국민은행 000000-00-000000' };
+        case 'snippet_copy': return { text: '안녕하세요, WD Corporation입니다. 문의하신 건에 대해 안내드립니다.' };
+        case 'dept_contacts': return { text: '총무/경영지원: 내선 101\n영업/기획: 내선 102\n기술/운영: 내선 103' };
+        case 'client_memo': return { text: '' };
+        case 'filename_gen': return { date: formatDate(new Date()).replace(/-/g, ''), dept: '업무', doc: '기획안', ver: 'v1' };
+        case 'mail_subject': return { prefix: '[WD Corporation]', date: formatDate(new Date()), subject: '업무 보고의 건' };
+        case 'nas_mini_fav': return { path: 'Z:\\공유폴더\\업무문서' };
+        case 'doc_review_chk': return { items: [{ text: '단가 및 부가세(10%) 확인', done: false }, { text: '첨부파일 누락 여부 확인', done: false }] };
+        case 'system_guide': return { text: '사내 공용 링크는 우측 패널에서도 관리할 수 있습니다.' };
+        case 'scratch_memo': return { text: '' };
+        case 'char_counter': return { text: '' };
+        case 'date_diff': return { startDate: formatDate(new Date()), endDate: '2026-12-31' };
+        case 'world_clock': return {};
+        case 'unit_converter': return { val: 100, mode: 'm_to_pyeong' };
+        case 'percent_calc': return { part: 25, total: 200 };
+        case 'random_picker': return { pool: '김담당, 이담당, 박담당, 최담당', picked: '' };
+        case 'quick_url_note': return { url: 'https://www.google.com' };
+        case 'daily_focus': return { text: '오늘 가장 중요한 일 한 가지를 끝내자.' };
+        case 'shortcut_cheat': return { text: 'Win + E: 파일 탐색기\nWin + Shift + S: 화면 캡처\nCtrl + Shift + T: 닫은 탭 복구' };
+        default: return {};
+      }
+    }
+
+    function updateSnapButtonUI() {
+      const btn = document.getElementById('btnToggleSnap');
+      btn.textContent = `격자 스냅: ${gridSnapEnabled ? 'ON' : 'OFF'}`;
+      btn.classList.toggle('active', gridSnapEnabled);
+    }
+
+    document.getElementById('btnToggleSnap').addEventListener('click', () => {
+      gridSnapEnabled = !gridSnapEnabled;
+      saveAll();
+      updateSnapButtonUI();
+      showToast(`격자 스냅이 ${gridSnapEnabled ? '활성화' : '비활성화'}되었습니다.`);
+    });
+
+    document.getElementById('btnApplyPreset').addEventListener('click', () => {
+      if (placedWidgets.length > 0 && !confirm('현재 캔버스에 배치된 위젯을 사내 기본 프리셋으로 교체할까요?')) {
+        return;
+      }
+      const presetTypes = [
+        'todo_list',
+        'vat_calc',
+        'corp_info',
+        'filename_gen',
+        'dday_counter',
+        'scratch_memo'
+      ];
+      const colWidth = 340;
+      const rowHeight = 230;
+      const cardW = 320;
+      const cardH = 200;
+
+      placedWidgets = presetTypes.map((type, idx) => {
+        const meta = WIDGET_CATALOG.find((w) => w.type === type);
+        const col = idx % 2;
+        const row = Math.floor(idx / 2);
+        return {
+          id: 'preset_' + type + '_' + idx,
+          type,
+          title: meta ? meta.title : type,
+          x: snapValue(20 + col * colWidth),
+          y: snapValue(20 + row * rowHeight),
+          w: snapValue(cardW),
+          h: snapValue(cardH),
+          state: defaultStateForWidget(type)
+        };
+      });
+
+      saveAll();
+      renderCanvasWidgets();
+      showToast('사내 업무용 기본 위젯 6종 프리셋이 배치되었습니다.');
+    });
+
+    function renderWidgetCatTabs() {
+      const wrap = document.getElementById('widgetCatTabs');
+      wrap.innerHTML = '';
+      WIDGET_CATEGORIES.forEach((cat) => {
+        const btn = document.createElement('button');
+        btn.className = 'cat-tab' + (selectedWidgetCat === cat ? ' active' : '');
+        btn.textContent = cat;
+        btn.onclick = () => {
+          selectedWidgetCat = cat;
+          renderWidgetCatTabs();
+          renderWidgetPickerGrid();
+        };
+        wrap.appendChild(btn);
+      });
+    }
+
+    function renderWidgetPickerGrid() {
+      const q = document.getElementById('widgetSearchInput').value.trim().toLowerCase();
+      const grid = document.getElementById('widgetPickerGrid');
+      const filtered = WIDGET_CATALOG.filter((w) => {
+        const matchCat = selectedWidgetCat === '전체' || w.cat === selectedWidgetCat;
+        const matchQ = !q || w.title.toLowerCase().includes(q) || w.desc.toLowerCase().includes(q) || w.cat.toLowerCase().includes(q);
+        return matchCat && matchQ;
+      });
+
+      grid.innerHTML = '';
+      filtered.forEach((w) => {
+        const item = document.createElement('div');
+        item.className = 'picker-item';
+        item.draggable = true;
+
+        item.addEventListener('dragstart', (e) => {
+          draggedCatalogType = w.type;
+          e.dataTransfer.setData('text/x-widget-type', w.type);
+        });
+        item.addEventListener('dragend', () => { draggedCatalogType = null; });
+
+        item.innerHTML = `
+          <div>
+            <div class="picker-item-title">${escapeHtml(w.title)}</div>
+            <div class="picker-item-desc" style="margin-top:4px;">${escapeHtml(w.desc)}</div>
+          </div>
+          <div class="picker-item-foot">
+            <span class="cat-tag">${escapeHtml(w.cat)}</span>
+            <button class="small">+ 추가</button>
+          </div>
+        `;
+        item.querySelector('button').onclick = () => {
+          addWidgetToCanvas(w.type);
+          document.getElementById('widgetPickerModal').classList.remove('open');
+        };
+        grid.appendChild(item);
+      });
+    }
+
+    function addWidgetToCanvas(type, x = null, y = null) {
+      const meta = WIDGET_CATALOG.find((w) => w.type === type);
+      if (!meta) return;
+
+      const idx = placedWidgets.length;
+      const rawX = x !== null ? Math.max(12, x) : 20 + (idx % 3) * 330;
+      const rawY = y !== null ? Math.max(12, y) : 20 + Math.floor(idx / 3) * 230;
+
+      placedWidgets.push({
+        id: 'w_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        type,
+        title: meta.title,
+        x: snapValue(rawX),
+        y: snapValue(rawY),
+        w: snapValue(310),
+        h: snapValue(215),
+        state: defaultStateForWidget(type)
+      });
+      saveAll();
+      renderCanvasWidgets();
+      showToast(`'${meta.title}' 위젯이 추가되었습니다.`);
+    }
+
+    function removeWidget(id) {
+      placedWidgets = placedWidgets.filter((w) => w.id !== id);
+      saveAll();
+      renderCanvasWidgets();
+    }
+
+    function renderChecklistBody(bodyEl, wObj, keyName = 'items', placeholder = '항목 입력...') {
+      const items = wObj.state[keyName] || [];
+      const row = document.createElement('div');
+      row.style.display = 'flex';
+      row.style.gap = '4px';
+      const inp = document.createElement('input');
+      inp.placeholder = placeholder;
+      inp.style.flex = '1';
+      const addBtn = document.createElement('button');
+      addBtn.className = 'small';
+      addBtn.textContent = '추가';
+      addBtn.onclick = () => {
+        if (!inp.value.trim()) return;
+        items.push({ text: inp.value.trim(), done: false });
+        wObj.state[keyName] = items;
+        saveAll();
+        renderCanvasWidgets();
+      };
+      row.append(inp, addBtn);
+      bodyEl.appendChild(row);
+
+      items.forEach((it, i) => {
+        const line = document.createElement('div');
+        line.style.display = 'flex';
+        line.style.alignItems = 'center';
+        line.style.justifyContent = 'space-between';
+        line.style.gap = '6px';
+        line.style.padding = '3px 4px';
+        line.style.borderBottom = '1px solid var(--border-light)';
+
+        const left = document.createElement('label');
+        left.style.display = 'flex';
+        left.style.alignItems = 'center';
+        left.style.gap = '6px';
+        left.style.cursor = 'pointer';
+        left.style.flex = '1';
+
+        const chk = document.createElement('input');
+        chk.type = 'checkbox';
+        chk.checked = !!it.done;
+        chk.onchange = () => {
+          it.done = chk.checked;
+          saveAll();
+          renderCanvasWidgets();
+        };
+        const sp = document.createElement('span');
+        sp.textContent = it.text;
+        if (it.done) {
+          sp.style.textDecoration = 'line-through';
+          sp.style.color = 'var(--text-muted)';
+        }
+
+        left.append(chk, sp);
+
+        const del = document.createElement('button');
+        del.className = 'danger';
+        del.textContent = '삭제';
+        del.onclick = () => {
+          items.splice(i, 1);
+          saveAll();
+          renderCanvasWidgets();
+        };
+        line.append(left, del);
+        bodyEl.appendChild(line);
+      });
+    }
+
+    function renderTextWidgetBody(bodyEl, wObj, placeholder = '내용 입력...') {
+      const ta = document.createElement('textarea');
+      ta.value = wObj.state.text || '';
+      ta.placeholder = placeholder;
+      ta.style.flex = '1';
+      ta.style.minHeight = '90px';
+      ta.oninput = () => {
+        wObj.state.text = ta.value;
+        saveAll();
+      };
+      const bar = document.createElement('div');
+      bar.style.display = 'flex';
+      bar.style.justifyContent = 'flex-end';
+      const cp = document.createElement('button');
+      cp.className = 'secondary small';
+      cp.textContent = '내용 복사';
+      cp.onclick = () => copyText(wObj.state.text || '', wObj.title);
+      bar.appendChild(cp);
+      bodyEl.append(ta, bar);
+    }
+
+    function buildWidgetContent(bodyEl, wObj) {
+      const s = wObj.state;
+      switch (wObj.type) {
+        case 'vat_calc': {
+          const supply = Number(s.supply || 0);
+          const vat = Math.round(supply * 0.1);
+          const total = supply + vat;
+          bodyEl.innerHTML = `
+            <input type="number" value="${supply}" placeholder="공급가액 입력" />
+            <div class="w-stat">부가세(10%): ${vat.toLocaleString()}원<br/>합계금액: ${total.toLocaleString()}원</div>
+          `;
+          bodyEl.querySelector('input').oninput = (e) => {
+            s.supply = Number(e.target.value || 0);
+            saveAll();
+            renderCanvasWidgets();
+          };
+          break;
+        }
+        case 'margin_calc': {
+          const cost = Number(s.cost || 0);
+          const price = Number(s.price || 0);
+          const profit = price - cost;
+          const rate = price > 0 ? ((profit / price) * 100).toFixed(1) : '0.0';
+          bodyEl.innerHTML = `
+            <div style="display:flex; gap:4px;">
+              <input type="number" id="c_${wObj.id}" value="${cost}" placeholder="원가" style="width:50%;" />
+              <input type="number" id="p_${wObj.id}" value="${price}" placeholder="판매가" style="width:50%;" />
+            </div>
+            <div class="w-stat">이익: ${profit.toLocaleString()}원 · 마진율: ${rate}%</div>
+          `;
+          bodyEl.querySelector(`#c_${wObj.id}`).oninput = (e) => { s.cost = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
+          bodyEl.querySelector(`#p_${wObj.id}`).oninput = (e) => { s.price = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
+          break;
+        }
+        case 'wage_calc': {
+          const m = Number(s.monthly || 0);
+          const daily = Math.round(m / 20.9);
+          const hourly = Math.round(m / 209);
+          bodyEl.innerHTML = `
+            <input type="number" value="${m}" placeholder="월급 기준(원)" />
+            <div class="w-stat">일 환산(20.9일): ${daily.toLocaleString()}원<br/>시급 환산(209시간): ${hourly.toLocaleString()}원</div>
+          `;
+          bodyEl.querySelector('input').oninput = (e) => { s.monthly = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
+          break;
+        }
+        case 'quote_sum': {
+          const u = Number(s.unitPrice || 0);
+          const q = Number(s.qty || 0);
+          const sub = u * q;
+          const tot = Math.round(sub * 1.1);
+          bodyEl.innerHTML = `
+            <div style="display:flex; gap:4px;">
+              <input type="number" id="u_${wObj.id}" value="${u}" placeholder="단가" style="flex:1;" />
+              <input type="number" id="q_${wObj.id}" value="${q}" placeholder="수량" style="width:70px;" />
+            </div>
+            <div class="w-stat">공급가: ${sub.toLocaleString()}원 · VAT포함: ${tot.toLocaleString()}원</div>
+          `;
+          bodyEl.querySelector(`#u_${wObj.id}`).oninput = (e) => { s.unitPrice = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
+          bodyEl.querySelector(`#q_${wObj.id}`).oninput = (e) => { s.qty = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
+          break;
+        }
+        case 'mini_calc': {
+          let resultText = '';
+          try {
+            const safeExpr = String(s.expr || '').replace(/[^0-9+\-*/().\s]/g, '');
+            const val = Function(`"use strict"; return (${safeExpr || 0})`)();
+            resultText = Number.isFinite(val) ? Number(val).toLocaleString() : '계산 불가';
+          } catch {
+            resultText = '수식 확인 필요';
+          }
+          bodyEl.innerHTML = `
+            <input type="text" value="${escapeHtml(s.expr || '')}" placeholder="예: 15000 * 4 + 2000" />
+            <div class="w-stat">결과: ${resultText}</div>
+          `;
+          bodyEl.querySelector('input').oninput = (e) => { s.expr = e.target.value; saveAll(); renderCanvasWidgets(); };
+          break;
+        }
+        case 'todo_list':
+          renderChecklistBody(bodyEl, wObj, 'items', '할 일 입력...');
+          break;
+        case 'visit_checklist':
+          renderChecklistBody(bodyEl, wObj, 'items', '준비물 입력...');
+          break;
+        case 'doc_review_chk':
+          renderChecklistBody(bodyEl, wObj, 'items', '검수 항목 입력...');
+          break;
+        case 'dday_counter': {
+          const today = new Date(formatDate(new Date()) + 'T00:00:00');
+          const target = new Date((s.targetDate || formatDate(new Date())) + 'T00:00:00');
+          const diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
+          const label = diffDays === 0 ? 'D-Day (오늘)' : diffDays > 0 ? `D-${diffDays}` : `D+${Math.abs(diffDays)}`;
+          bodyEl.innerHTML = `
+            <input type="text" id="dn_${wObj.id}" value="${escapeHtml(s.targetName || '')}" placeholder="일정명" />
+            <input type="date" id="dd_${wObj.id}" value="${escapeHtml(s.targetDate || '')}" />
+            <div class="w-stat">${escapeHtml(s.targetName || '목표')}: ${label}</div>
+          `;
+          bodyEl.querySelector(`#dn_${wObj.id}`).oninput = (e) => { s.targetName = e.target.value; saveAll(); renderCanvasWidgets(); };
+          bodyEl.querySelector(`#dd_${wObj.id}`).onchange = (e) => { s.targetDate = e.target.value; saveAll(); renderCanvasWidgets(); };
+          break;
+        }
+        case 'pomodoro_timer': {
+          const sec = Number(s.seconds ?? 1500);
+          const mm = String(Math.floor(sec / 60)).padStart(2, '0');
+          const ss = String(sec % 60).padStart(2, '0');
+          bodyEl.innerHTML = `
+            <div class="w-stat" style="text-align:center; font-size:18px;">${mm}:${ss}</div>
+            <div style="display:flex; gap:4px; justify-content:center;">
+              <button class="small" id="tStart_${wObj.id}">${s.running ? '일시정지' : '시작'}</button>
+              <button class="secondary small" id="tReset_${wObj.id}">25분 리셋</button>
+            </div>
+          `;
+          bodyEl.querySelector(`#tStart_${wObj.id}`).onclick = () => {
+            s.running = !s.running;
+            saveAll();
+            renderCanvasWidgets();
+          };
+          bodyEl.querySelector(`#tReset_${wObj.id}`).onclick = () => {
+            s.running = false;
+            s.seconds = 1500;
+            saveAll();
+            renderCanvasWidgets();
+          };
+          break;
+        }
+        case 'weekly_kpi': {
+          bodyEl.innerHTML = `
+            <input type="text" value="${escapeHtml(s.goal || '')}" placeholder="주간 목표" />
+            <div style="display:flex; align-items:center; gap:6px;">
+              <input type="range" min="0" max="100" value="${Number(s.progress || 0)}" style="flex:1;" />
+              <strong style="font-size:12px;">${Number(s.progress || 0)}%</strong>
+            </div>
+          `;
+          bodyEl.querySelector('input[type="text"]').oninput = (e) => { s.goal = e.target.value; saveAll(); };
+          bodyEl.querySelector('input[type="range"]').oninput = (e) => { s.progress = Number(e.target.value); saveAll(); renderCanvasWidgets(); };
+          break;
+        }
+        case 'corp_info': {
+          bodyEl.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:4px;">
+              <span>사업자: <strong>${escapeHtml(s.bizNo)}</strong></span>
+              <button class="secondary small" id="cpBiz_${wObj.id}">복사</button>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:4px;">
+              <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">계좌: <strong>${escapeHtml(s.bank)}</strong></span>
+              <button class="secondary small" id="cpBank_${wObj.id}">복사</button>
+            </div>
+            <input type="text" value="${escapeHtml(s.bizNo)}" placeholder="사업자등록번호 수정" />
+            <input type="text" value="${escapeHtml(s.bank)}" placeholder="계좌번호 수정" />
+          `;
+          const inputs = bodyEl.querySelectorAll('input');
+          bodyEl.querySelector(`#cpBiz_${wObj.id}`).onclick = () => copyText(s.bizNo, '사업자등록번호');
+          bodyEl.querySelector(`#cpBank_${wObj.id}`).onclick = () => copyText(s.bank, '계좌번호');
+          inputs[0].oninput = (e) => { s.bizNo = e.target.value; saveAll(); renderCanvasWidgets(); };
+          inputs[1].oninput = (e) => { s.bank = e.target.value; saveAll(); renderCanvasWidgets(); };
+          break;
+        }
+        case 'filename_gen': {
+          const generated = `${s.date || '20261126'}_${s.dept || '업무'}_${s.doc || '문서'}_${s.ver || 'v1'}`;
+          bodyEl.innerHTML = `
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
+              <input type="text" id="fnD_${wObj.id}" value="${escapeHtml(s.date)}" placeholder="날짜" />
+              <input type="text" id="fnP_${wObj.id}" value="${escapeHtml(s.dept)}" placeholder="부서" />
+              <input type="text" id="fnM_${wObj.id}" value="${escapeHtml(s.doc)}" placeholder="문서명" />
+              <input type="text" id="fnV_${wObj.id}" value="${escapeHtml(s.ver)}" placeholder="버전" />
+            </div>
+            <div class="w-stat" style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+              <span style="overflow:hidden; text-overflow:ellipsis;">${escapeHtml(generated)}</span>
+              <button class="small" id="fnCp_${wObj.id}">복사</button>
+            </div>
+          `;
+          bodyEl.querySelector(`#fnD_${wObj.id}`).oninput = (e) => { s.date = e.target.value; saveAll(); renderCanvasWidgets(); };
+          bodyEl.querySelector(`#fnP_${wObj.id}`).oninput = (e) => { s.dept = e.target.value; saveAll(); renderCanvasWidgets(); };
+          bodyEl.querySelector(`#fnM_${wObj.id}`).oninput = (e) => { s.doc = e.target.value; saveAll(); renderCanvasWidgets(); };
+          bodyEl.querySelector(`#fnV_${wObj.id}`).oninput = (e) => { s.ver = e.target.value; saveAll(); renderCanvasWidgets(); };
+          bodyEl.querySelector(`#fnCp_${wObj.id}`).onclick = () => copyText(generated, '파일명');
+          break;
+        }
+        case 'mail_subject': {
+          const subj = `${s.prefix || ''} ${s.date || ''} ${s.subject || ''}`.trim();
+          bodyEl.innerHTML = `
+            <div style="display:flex; gap:4px;">
+              <input type="text" id="ms1_${wObj.id}" value="${escapeHtml(s.prefix)}" style="width:110px;" />
+              <input type="text" id="ms2_${wObj.id}" value="${escapeHtml(s.subject)}" style="flex:1;" />
+            </div>
+            <div class="w-stat" style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+              <span style="overflow:hidden; text-overflow:ellipsis;">${escapeHtml(subj)}</span>
+              <button class="small" id="msCp_${wObj.id}">복사</button>
+            </div>
+          `;
+          bodyEl.querySelector(`#ms1_${wObj.id}`).oninput = (e) => { s.prefix = e.target.value; saveAll(); renderCanvasWidgets(); };
+          bodyEl.querySelector(`#ms2_${wObj.id}`).oninput = (e) => { s.subject = e.target.value; saveAll(); renderCanvasWidgets(); };
+          bodyEl.querySelector(`#msCp_${wObj.id}`).onclick = () => copyText(subj, '메일 제목');
+          break;
+        }
+        case 'nas_mini_fav': {
+          bodyEl.innerHTML = `
+            <input type="text" value="${escapeHtml(s.path || '')}" placeholder="경로 입력" />
+            <button class="small" id="nfCp_${wObj.id}">경로 복사</button>
+          `;
+          bodyEl.querySelector('input').oninput = (e) => { s.path = e.target.value; saveAll(); };
+          bodyEl.querySelector(`#nfCp_${wObj.id}`).onclick = () => copyText(s.path || '', 'NAS 경로');
+          break;
+        }
+        case 'char_counter': {
+          const txt = s.text || '';
+          const noSpace = txt.replace(/\s+/g, '').length;
+          bodyEl.innerHTML = `
+            <textarea style="flex:1; min-height:70px;" placeholder="글자 수를 셀 문장을 입력하세요...">${escapeHtml(txt)}</textarea>
+            <div class="w-stat">공백 포함: ${txt.length}자 · 공백 제외: ${noSpace}자</div>
+          `;
+          bodyEl.querySelector('textarea').oninput = (e) => { s.text = e.target.value; saveAll(); renderCanvasWidgets(); };
+          break;
+        }
+        case 'date_diff': {
+          const d1 = new Date((s.startDate || formatDate(new Date())) + 'T00:00:00');
+          const d2 = new Date((s.endDate || formatDate(new Date())) + 'T00:00:00');
+          const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+          bodyEl.innerHTML = `
+            <div style="display:flex; gap:4px;">
+              <input type="date" id="df1_${wObj.id}" value="${escapeHtml(s.startDate)}" style="flex:1;" />
+              <input type="date" id="df2_${wObj.id}" value="${escapeHtml(s.endDate)}" style="flex:1;" />
+            </div>
+            <div class="w-stat">기간 차이: ${diff}일</div>
+          `;
+          bodyEl.querySelector(`#df1_${wObj.id}`).onchange = (e) => { s.startDate = e.target.value; saveAll(); renderCanvasWidgets(); };
+          bodyEl.querySelector(`#df2_${wObj.id}`).onchange = (e) => { s.endDate = e.target.value; saveAll(); renderCanvasWidgets(); };
+          break;
+        }
+        case 'world_clock': {
+          const now = new Date();
+          const fmt = (tz) => now.toLocaleString('ko-KR', { timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false });
+          bodyEl.innerHTML = `
+            <div class="w-stat" style="line-height:1.65;">
+              서울 (KST): ${fmt('Asia/Seoul')}<br/>
+              도쿄 (JST): ${fmt('Asia/Tokyo')}<br/>
+              뉴욕 (EST): ${fmt('America/New_York')}<br/>
+              런던 (GMT): ${fmt('Europe/London')}
+            </div>
+          `;
+          break;
+        }
+        case 'unit_converter': {
+          const val = Number(s.val || 0);
+          let out = '';
+          if (s.mode === 'm_to_pyeong') out = `${(val * 0.3025).toFixed(2)} 평`;
+          else if (s.mode === 'km_to_m') out = `${(val * 1000).toLocaleString()} m`;
+          else out = `${(val / 1000).toFixed(3)} 톤(t)`;
+          bodyEl.innerHTML = `
+            <div style="display:flex; gap:4px;">
+              <input type="number" value="${val}" style="width:90px;" />
+              <select style="flex:1;">
+                <option value="m_to_pyeong" ${s.mode === 'm_to_pyeong' ? 'selected' : ''}>㎡ → 평</option>
+                <option value="km_to_m" ${s.mode === 'km_to_m' ? 'selected' : ''}>km → m</option>
+                <option value="kg_to_t" ${s.mode === 'kg_to_t' ? 'selected' : ''}>kg → 톤(t)</option>
+              </select>
+            </div>
+            <div class="w-stat">변환 결과: ${out}</div>
+          `;
+          bodyEl.querySelector('input').oninput = (e) => { s.val = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
+          bodyEl.querySelector('select').onchange = (e) => { s.mode = e.target.value; saveAll(); renderCanvasWidgets(); };
+          break;
+        }
+        case 'percent_calc': {
+          const part = Number(s.part || 0);
+          const total = Number(s.total || 0);
+          const pct = total > 0 ? ((part / total) * 100).toFixed(2) : '0.00';
+          bodyEl.innerHTML = `
+            <div style="display:flex; gap:4px; align-items:center;">
+              <input type="number" id="pc1_${wObj.id}" value="${part}" style="flex:1;" />
+              <span>/</span>
+              <input type="number" id="pc2_${wObj.id}" value="${total}" style="flex:1;" />
+            </div>
+            <div class="w-stat">비율: ${pct}%</div>
+          `;
+          bodyEl.querySelector(`#pc1_${wObj.id}`).oninput = (e) => { s.part = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
+          bodyEl.querySelector(`#pc2_${wObj.id}`).oninput = (e) => { s.total = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
+          break;
+        }
+        case 'random_picker': {
+          bodyEl.innerHTML = `
+            <input type="text" value="${escapeHtml(s.pool || '')}" placeholder="쉼표(,)로 구분해 입력" />
+            <div style="display:flex; gap:6px; align-items:center;">
+              <button class="small" id="rpBtn_${wObj.id}">추첨하기</button>
+              <strong style="color:var(--accent);">${escapeHtml(s.picked || '-')}</strong>
+            </div>
+          `;
+          bodyEl.querySelector('input').oninput = (e) => { s.pool = e.target.value; saveAll(); };
+          bodyEl.querySelector(`#rpBtn_${wObj.id}`).onclick = () => {
+            const arr = String(s.pool || '').split(',').map((x) => x.trim()).filter(Boolean);
+            if (!arr.length) return;
+            s.picked = arr[Math.floor(Math.random() * arr.length)];
+            saveAll();
+            renderCanvasWidgets();
+          };
+          break;
+        }
+        case 'quick_url_note': {
+          bodyEl.innerHTML = `
+            <input type="url" value="${escapeHtml(s.url || '')}" placeholder="https://..." />
+            <button class="small" id="quBtn_${wObj.id}">새 탭 열기</button>
+          `;
+          bodyEl.querySelector('input').oninput = (e) => { s.url = e.target.value; saveAll(); };
+          bodyEl.querySelector(`#quBtn_${wObj.id}`).onclick = () => {
+            if (s.url) window.open(s.url, '_blank', 'noopener');
+          };
+          break;
+        }
+        case 'daily_focus': {
+          bodyEl.innerHTML = `
+            <input type="text" value="${escapeHtml(s.text || '')}" />
+            <div class="w-stat">${escapeHtml(s.text || '')}</div>
+          `;
+          bodyEl.querySelector('input').oninput = (e) => { s.text = e.target.value; saveAll(); renderCanvasWidgets(); };
+          break;
+        }
+        default:
+          renderTextWidgetBody(bodyEl, wObj);
+          break;
+      }
+    }
+
+    function renderCanvasWidgets() {
+      const canvas = document.getElementById('widgetCanvas');
+      const placeholder = document.getElementById('canvasPlaceholder');
+      document.getElementById('activeWidgetCount').textContent = `${placedWidgets.length}개 위젯 배치됨`;
+
+      canvas.querySelectorAll('.w-card').forEach((el) => el.remove());
+      placeholder.style.display = placedWidgets.length ? 'none' : 'flex';
+
+      let maxBottom = 520;
+      placedWidgets.forEach((wObj) => {
+        maxBottom = Math.max(maxBottom, wObj.y + wObj.h + 30);
+        const card = document.createElement('div');
+        card.className = 'w-card';
+        card.style.left = `${wObj.x}px`;
+        card.style.top = `${wObj.y}px`;
+        card.style.width = `${wObj.w}px`;
+        card.style.height = `${wObj.h}px`;
+
+        const header = document.createElement('div');
+        header.className = 'w-header';
+        header.innerHTML = `
+          <div class="w-title-wrap">
+            <span style="color:var(--text-muted); font-weight:800;">::</span>
+            <span class="w-title-text">${escapeHtml(wObj.title)}</span>
+          </div>
+        `;
+
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'w-close';
+        closeBtn.textContent = '닫기';
+        closeBtn.title = '위젯 닫기';
+        closeBtn.onclick = (e) => {
+          e.stopPropagation();
+          removeWidget(wObj.id);
+        };
+        header.appendChild(closeBtn);
+
+        header.addEventListener('mousedown', (e) => {
+          if (e.target === closeBtn) return;
+          e.preventDefault();
+          const startX = e.clientX;
+          const startY = e.clientY;
+          const origX = wObj.x;
+          const origY = wObj.y;
+          card.classList.add('active-drag');
+
+          const onMove = (ev) => {
+            const nextX = Math.max(8, origX + (ev.clientX - startX));
+            const nextY = Math.max(8, origY + (ev.clientY - startY));
+            card.style.left = `${snapValue(nextX)}px`;
+            card.style.top = `${snapValue(nextY)}px`;
+            wObj._tempX = nextX;
+            wObj._tempY = nextY;
+          };
+
+          const onUp = () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            card.classList.remove('active-drag');
+            if (wObj._tempX !== undefined) {
+              wObj.x = snapValue(wObj._tempX);
+              wObj.y = snapValue(wObj._tempY);
+              delete wObj._tempX;
+              delete wObj._tempY;
+            }
+            saveAll();
+            renderCanvasWidgets();
+          };
+
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+        });
+
+        const body = document.createElement('div');
+        body.className = 'w-body';
+        buildWidgetContent(body, wObj);
+
+        const resizeHandle = document.createElement('div');
+        resizeHandle.className = 'w-resize-handle';
+        resizeHandle.title = '드래그해서 크기 조절';
+
+        resizeHandle.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const startX = e.clientX;
+          const startY = e.clientY;
+          const origW = wObj.w;
+          const origH = wObj.h;
+          card.classList.add('active-drag');
+
+          const onMove = (ev) => {
+            const nextW = Math.max(240, origW + (ev.clientX - startX));
+            const nextH = Math.max(150, origH + (ev.clientY - startY));
+            card.style.width = `${snapValue(nextW)}px`;
+            card.style.height = `${snapValue(nextH)}px`;
+            wObj._tempW = nextW;
+            wObj._tempH = nextH;
+          };
+
+          const onUp = () => {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+            card.classList.remove('active-drag');
+            if (wObj._tempW !== undefined) {
+              wObj.w = snapValue(wObj._tempW);
+              wObj.h = snapValue(wObj._tempH);
+              delete wObj._tempW;
+              delete wObj._tempH;
+            }
+            saveAll();
+            renderCanvasWidgets();
+          };
+
+          document.addEventListener('mousemove', onMove);
+          document.addEventListener('mouseup', onUp);
+        });
+
+        card.append(header, body, resizeHandle);
+        canvas.appendChild(card);
+      });
+
+      canvas.style.minHeight = `${maxBottom}px`;
+    }
+
+    setInterval(() => {
+      let changed = false;
+      placedWidgets.forEach((wObj) => {
+        if (wObj.type === 'pomodoro_timer' && wObj.state.running) {
+          if (wObj.state.seconds > 0) {
+            wObj.state.seconds -= 1;
+            changed = true;
+          } else {
+            wObj.state.running = false;
+            changed = true;
+          }
+        }
+      });
+      if (changed) {
+        saveAll();
+        renderCanvasWidgets();
+      }
+    }, 1000);
+
+    const widgetCanvas = document.getElementById('widgetCanvas');
+    widgetCanvas.addEventListener('dragover', (e) => {
+      if (draggedCatalogType || e.dataTransfer.types.includes('text/x-widget-type')) {
+        e.preventDefault();
+        widgetCanvas.classList.add('drop-highlight');
+      }
+    });
+    widgetCanvas.addEventListener('dragleave', () => widgetCanvas.classList.remove('drop-highlight'));
+    widgetCanvas.addEventListener('drop', (e) => {
+      e.preventDefault();
+      widgetCanvas.classList.remove('drop-highlight');
+      const wType = e.dataTransfer.getData('text/x-widget-type') || draggedCatalogType;
+      if (!wType) return;
+      const rect = widgetCanvas.getBoundingClientRect();
+      const dropX = e.clientX - rect.left + widgetCanvas.scrollLeft - 140;
+      const dropY = e.clientY - rect.top + widgetCanvas.scrollTop - 20;
+      addWidgetToCanvas(wType, dropX, dropY);
+      document.getElementById('widgetPickerModal').classList.remove('open');
+      draggedCatalogType = null;
+    });
+
+    const openPicker = () => {
+      renderWidgetCatTabs();
+      renderWidgetPickerGrid();
+      document.getElementById('widgetPickerModal').classList.add('open');
+    };
+    document.getElementById('btnOpenWidgets').addEventListener('click', openPicker);
+    document.getElementById('btnOpenWidgets2').addEventListener('click', openPicker);
+    document.getElementById('btnClosePicker').addEventListener('click', () => {
+      document.getElementById('widgetPickerModal').classList.remove('open');
+    });
+    document.getElementById('widgetSearchInput').addEventListener('input', renderWidgetPickerGrid);
+    document.getElementById('btnClearWidgets').addEventListener('click', () => {
+      if (!placedWidgets.length) return;
+      if (confirm('캔버스에 배치된 위젯을 모두 지울까요?')) {
+        placedWidgets = [];
+        saveAll();
+        renderCanvasWidgets();
+      }
+    });
+
+    document.getElementById('btnExport').addEventListener('click', () => {
+      const payload = { docs, favIds, memos, links, placedWidgets, gridSnapEnabled, isDarkMode, exportedAt: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `WD_Corporation_Backup_${formatDate(new Date())}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast('백업 파일이 다운로드되었습니다.');
+    });
+
+    document.getElementById('btnImportTrigger').addEventListener('click', () => {
+      document.getElementById('importFile').click();
+    });
+
+    document.getElementById('importFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (Array.isArray(data.docs)) docs = data.docs;
+          if (Array.isArray(data.favIds)) favIds = data.favIds;
+          if (data.memos && typeof data.memos === 'object') memos = data.memos;
+          if (Array.isArray(data.links)) links = data.links;
+          if (Array.isArray(data.placedWidgets)) placedWidgets = data.placedWidgets;
+          if (typeof data.gridSnapEnabled === 'boolean') gridSnapEnabled = data.gridSnapEnabled;
+          if (typeof data.isDarkMode === 'boolean') isDarkMode = data.isDarkMode;
+          saveAll();
+          applyThemeUI();
+          updateSnapButtonUI();
+          renderCalendar();
+          selectDate(selectedDateStr);
+          renderDocs();
+          renderFavs();
+          renderLinks();
+          renderCanvasWidgets();
+          showToast('데이터가 복원되었습니다.');
+        } catch {
+          alert('올바른 백업 JSON 파일이 아닙니다.');
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    document.getElementById('docSearch').addEventListener('input', renderDocs);
+    document.getElementById('docFilterType').addEventListener('change', renderDocs);
+
+    window.addEventListener('load', () => {
+      if (googleClientId) initGoogleTokenClient();
+    });
+
+    applyThemeUI();
+    updateSnapButtonUI();
+    initCalendar();
+    renderDocs();
+    renderFavs();
+    renderLinks();
+    renderCanvasWidgets();
+  </script>
+</body>
+</html>
