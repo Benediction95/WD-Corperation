@@ -1522,23 +1522,29 @@
       }
 
       const droppedFiles = e.dataTransfer.files;
-      if (droppedFiles && droppedFiles.length > 0) {
-        Array.from(droppedFiles).forEach((file) => {
-          const newId = String(Date.now() + Math.random());
-          const fullPath = file.path || file.name;
-          docs.unshift({
-            id: newId,
-            type: detectTypeByName(file.name),
-            name: file.name,
-            path: fullPath
-          });
-          favIds.push(newId);
-        });
-        saveAll();
-        renderDocs();
-        renderFavs();
-        showToast(`${droppedFiles.length}개 항목이 즐겨찾기에 추가되었습니다.`);
-      }
+if (droppedFiles && droppedFiles.length > 0) {
+  Array.from(droppedFiles).forEach((file) => {
+    const newId = String(Date.now() + Math.random());
+    const resolvedPath =
+      (window.wdDesktop && typeof window.wdDesktop.getPathForFile === 'function'
+        ? window.wdDesktop.getPathForFile(file)
+        : '') ||
+      file.path ||
+      file.name;
+
+    docs.unshift({
+      id: newId,
+      type: detectTypeByName(file.name),
+      name: file.name,
+      path: resolvedPath
+    });
+    favIds.push(newId);
+  });
+  saveAll();
+  renderDocs();
+  renderFavs();
+  showToast(`${droppedFiles.length}개 항목이 즐겨찾기에 추가되었습니다.`);
+}
     });
 
     function renderFavs() {
