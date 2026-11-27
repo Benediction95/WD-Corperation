@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WD Corporation - 사내 인트라넷 업무 허브</title>
+  <title>WD Corperation - 사내 인트라넷 업무 허브</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     :root {
@@ -105,7 +105,7 @@
     .brand-title {
       font-size: 15px;
       font-weight: 800;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.4px;
       color: #ffffff;
     }
     .header-divider {
@@ -827,7 +827,7 @@
 <body>
   <header>
     <div class="header-left">
-      <span class="brand-title">WD CORPORATION</span>
+      <span class="brand-title">WD Corperation</span>
       <span class="header-divider"></span>
       <span class="badge">INTRANET WORKSPACE</span>
     </div>
@@ -844,7 +844,7 @@
   </header>
 
   <div class="notice-bar">
-    <span><strong>안내:</strong> 상단에서 라이트/다크 모드를 전환할 수 있으며, 위젯 캔버스에서 격자 스냅과 기본 프리셋 배치를 사용할 수 있습니다.</span>
+    <span><strong>안내:</strong> 폴더나 파일을 드래그해 추가한 뒤 <strong>더블클릭</strong>하면 폴더가 열리거나 연결된 프로그램으로 파일이 바로 실행됩니다.</span>
     <span class="toast-text" id="toastMsg"></span>
   </div>
 
@@ -927,7 +927,7 @@
     <section class="panel">
       <div class="panel-header">
         <span>즐겨찾기 및 업무 링크</span>
-        <span class="panel-submeta">드래그 추가 · 순서 정렬</span>
+        <span class="panel-submeta">드래그 추가 · 더블클릭 실행</span>
       </div>
       <div class="right-body">
         <div>
@@ -936,7 +936,7 @@
             <span class="panel-submeta" id="favCount">0개</span>
           </div>
           <div class="fav-dropzone" id="favDropzone">
-            <div class="drop-hint">목록이나 파일/폴더를 끌어다 놓거나, :: 핸들로 순서를 바꾸세요</div>
+            <div class="drop-hint">항목이나 파일/폴더를 끌어다 놓고, 더블클릭으로 바로 여세요</div>
             <div class="fav-list" id="favList"></div>
           </div>
         </div>
@@ -1075,6 +1075,24 @@
       });
     }
 
+    async function openTargetItem(item) {
+      if (!item || !item.path) {
+        alert('열 수 있는 경로 정보가 없습니다.');
+        return;
+      }
+      if (window.wdDesktop && typeof window.wdDesktop.openPath === 'function') {
+        const res = await window.wdDesktop.openPath(item.path);
+        if (!res.ok) {
+          alert('열기 실패: ' + (res.error || '경로를 확인해 주세요.'));
+        } else {
+          showToast(`열림: ${item.name}`);
+        }
+      } else {
+        copyText(item.path, '경로');
+        showToast('데스크톱 외부 실행 브릿지가 없어 경로를 복사했습니다.');
+      }
+    }
+
     function formatDate(d) {
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -1090,7 +1108,7 @@
     }
 
     function detectTypeByName(name) {
-      const lower = name.toLowerCase();
+      const lower = String(name || '').toLowerCase();
       if (lower.endsWith('.xlsx') || lower.endsWith('.xls') || lower.endsWith('.csv')) return 'excel';
       if (lower.endsWith('.docx') || lower.endsWith('.doc') || lower.endsWith('.hwp') || lower.endsWith('.hwpx') || lower.endsWith('.pdf')) return 'word';
       if (!lower.includes('.')) return 'folder';
@@ -1432,6 +1450,11 @@
         });
         row.addEventListener('dragend', () => row.classList.remove('dragging'));
 
+        row.addEventListener('dblclick', (e) => {
+          if (e.target.closest('button, input, select')) return;
+          openTargetItem(d);
+        });
+
         const info = document.createElement('div');
         info.className = 'doc-info';
         info.innerHTML = `
@@ -1502,11 +1525,12 @@
       if (droppedFiles && droppedFiles.length > 0) {
         Array.from(droppedFiles).forEach((file) => {
           const newId = String(Date.now() + Math.random());
+          const fullPath = file.path || file.name;
           docs.unshift({
             id: newId,
             type: detectTypeByName(file.name),
             name: file.name,
-            path: file.path || file.name
+            path: fullPath
           });
           favIds.push(newId);
         });
@@ -1529,7 +1553,7 @@
       listEl.innerHTML = '';
 
       if (!favDocs.length) {
-        listEl.innerHTML = `<div class="empty">즐겨찾기 항목이 없습니다. 항목을 이 상자 안으로 드래그해 보세요.</div>`;
+        listEl.innerHTML = `<div class="empty">즐겨찾기 항목이 없습니다. 항목이나 파일/폴더를 이 상자 안으로 드래그해 보세요.</div>`;
         return;
       }
 
@@ -1578,6 +1602,11 @@
           saveAll();
           renderFavs();
           showToast('즐겨찾기 순서가 변경되었습니다.');
+        });
+
+        card.addEventListener('dblclick', (e) => {
+          if (e.target.closest('button, input, select')) return;
+          openTargetItem(d);
         });
 
         card.innerHTML = `
@@ -1705,12 +1734,12 @@
         case 'weekly_kpi': return { goal: '주요 안건 처리 완료', progress: 65 };
         case 'meeting_notes': return { text: '- 참석자:\n- 결정사항:\n- 후속조치:' };
         case 'visit_checklist': return { items: [{ text: '노트북 및 충전기', done: false }, { text: '명함 및 서류', done: false }] };
-        case 'corp_info': return { corpName: 'WD Corporation', bizNo: '000-00-00000', bank: '국민은행 000000-00-000000' };
-        case 'snippet_copy': return { text: '안녕하세요, WD Corporation입니다. 문의하신 건에 대해 안내드립니다.' };
+        case 'corp_info': return { corpName: 'WD Corperation', bizNo: '000-00-00000', bank: '국민은행 000000-00-000000' };
+        case 'snippet_copy': return { text: '안녕하세요, WD Corperation입니다. 문의하신 건에 대해 안내드립니다.' };
         case 'dept_contacts': return { text: '총무/경영지원: 내선 101\n영업/기획: 내선 102\n기술/운영: 내선 103' };
         case 'client_memo': return { text: '' };
         case 'filename_gen': return { date: formatDate(new Date()).replace(/-/g, ''), dept: '업무', doc: '기획안', ver: 'v1' };
-        case 'mail_subject': return { prefix: '[WD Corporation]', date: formatDate(new Date()), subject: '업무 보고의 건' };
+        case 'mail_subject': return { prefix: '[WD Corperation]', date: formatDate(new Date()), subject: '업무 보고의 건' };
         case 'nas_mini_fav': return { path: 'Z:\\공유폴더\\업무문서' };
         case 'doc_review_chk': return { items: [{ text: '단가 및 부가세(10%) 확인', done: false }, { text: '첨부파일 누락 여부 확인', done: false }] };
         case 'system_guide': return { text: '사내 공용 링크는 우측 패널에서도 관리할 수 있습니다.' };
@@ -2461,7 +2490,7 @@
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `WD_Corporation_Backup_${formatDate(new Date())}.json`;
+      a.download = `WD_Corperation_Backup_${formatDate(new Date())}.json`;
       a.click();
       URL.revokeObjectURL(a.href);
       showToast('백업 파일이 다운로드되었습니다.');
