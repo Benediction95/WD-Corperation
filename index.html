@@ -11,8 +11,8 @@
       --bg-surface: #ffffff;
       --bg-subtle: #f8fafc;
       --bg-muted: #f1f5f9;
-      --bg-canvas: #f8fafc;
-      --grid-dot: #cbd5e1;
+      --bg-canvas: #dce3ec;
+      --grid-dot: #94a3b8;
       --border-light: #e2e8f0;
       --border-mid: #cbd5e1;
       --text-primary: #0f172a;
@@ -33,11 +33,13 @@
       --danger: #b91c1c;
       --danger-soft: #fef2f2;
       --danger-border: #fecaca;
+      --peg-hole: rgba(15, 23, 42, 0.22);
+      --peg-highlight: rgba(255, 255, 255, 0.65);
       --radius-lg: 12px;
       --radius-md: 8px;
       --radius-sm: 6px;
       --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
-      --shadow-md: 0 8px 20px -6px rgba(15, 23, 42, 0.12);
+      --shadow-md: 0 10px 24px -6px rgba(15, 23, 42, 0.16);
     }
 
     body.dark-mode {
@@ -45,8 +47,8 @@
       --bg-surface: #111827;
       --bg-subtle: #162033;
       --bg-muted: #1e293b;
-      --bg-canvas: #0d1424;
-      --grid-dot: #24324a;
+      --bg-canvas: #131b2b;
+      --grid-dot: #334155;
       --border-light: #243044;
       --border-mid: #334155;
       --text-primary: #f1f5f9;
@@ -67,8 +69,10 @@
       --danger: #f87171;
       --danger-soft: rgba(239, 68, 68, 0.14);
       --danger-border: rgba(248, 113, 113, 0.32);
+      --peg-hole: rgba(2, 6, 23, 0.72);
+      --peg-highlight: rgba(148, 163, 184, 0.14);
       --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
-      --shadow-md: 0 10px 24px -6px rgba(0, 0, 0, 0.55);
+      --shadow-md: 0 12px 26px -6px rgba(0, 0, 0, 0.6);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -128,6 +132,12 @@
       gap: 7px;
       align-items: center;
       flex-wrap: wrap;
+    }
+    .toast-text {
+      font-size: 11px;
+      font-weight: 700;
+      color: #93c5fd;
+      padding: 0 4px;
     }
     .status-pill {
       font-size: 11px;
@@ -221,23 +231,6 @@
     button.danger:hover { opacity: 0.88; }
 
     button.small { padding: 4px 9px; font-size: 11px; }
-
-    .notice-bar {
-      background: var(--warn-soft);
-      border-bottom: 1px solid var(--warn-border);
-      color: var(--warn);
-      font-size: 12px;
-      padding: 7px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-    }
-    .toast-text {
-      font-weight: 700;
-      color: var(--accent);
-      white-space: nowrap;
-    }
 
     .main-grid {
       display: grid;
@@ -429,7 +422,7 @@
       border-radius: var(--radius-md);
       padding: 10px;
       display: grid;
-      grid-template-columns: 108px 1fr 1fr auto;
+      grid-template-columns: 106px 1fr 1fr auto;
       gap: 8px;
       align-items: center;
     }
@@ -453,13 +446,33 @@
     }
     .filter-bar input { flex: 1; }
 
+    .doc-drop-hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      background: var(--bg-subtle);
+      border: 1px dashed var(--border-mid);
+      border-radius: var(--radius-sm);
+      padding: 5px 10px;
+      text-align: center;
+    }
+
     .doc-list {
       display: flex;
       flex-direction: column;
       gap: 6px;
       overflow-y: auto;
       max-height: 445px;
+      min-height: 180px;
+      padding: 4px;
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      transition: border-color 0.12s ease, background-color 0.12s ease;
     }
+    .doc-list.drag-over {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+
     .doc-row {
       border: 1px solid var(--border-light);
       border-radius: var(--radius-md);
@@ -469,12 +482,13 @@
       justify-content: space-between;
       gap: 8px;
       background: var(--bg-surface);
-      cursor: grab;
+      cursor: default;
       transition: border-color 0.12s ease, background-color 0.12s ease;
     }
-    .doc-row:active { cursor: grabbing; }
     .doc-row:hover { background: var(--bg-subtle); border-color: var(--border-mid); }
     .doc-row.dragging { opacity: 0.45; border-style: dashed; }
+    .doc-row.drag-target-top { border-top: 3px solid var(--accent); }
+    .doc-row.drag-target-bottom { border-bottom: 3px solid var(--accent); }
 
     .drag-handle {
       color: var(--text-muted);
@@ -483,26 +497,39 @@
       letter-spacing: -1px;
       user-select: none;
       cursor: grab;
-      padding: 2px 3px;
+      padding: 2px 4px;
       border-radius: 4px;
     }
+    .drag-handle:active { cursor: grabbing; }
     .drag-handle:hover { color: var(--text-primary); background: var(--bg-muted); }
 
-    .type-tag {
+    .cat-badge {
       display: inline-block;
       font-size: 10px;
       font-weight: 700;
-      letter-spacing: 0.3px;
-      padding: 2px 6px;
+      letter-spacing: 0.2px;
+      padding: 2px 7px;
       border-radius: 4px;
       background: var(--bg-muted);
       color: var(--text-secondary);
       border: 1px solid var(--border-light);
+      white-space: nowrap;
     }
-    .type-tag.folder { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-border); }
-    .type-tag.excel { background: var(--success-soft); color: var(--success); border-color: rgba(16, 185, 129, 0.35); }
-    .type-tag.word { background: rgba(139, 92, 246, 0.14); color: #a78bfa; border-color: rgba(139, 92, 246, 0.35); }
-    body:not(.dark-mode) .type-tag.word { background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe; }
+    .cat-badge.cat-folder { background: var(--accent-soft); color: var(--accent); border-color: var(--accent-border); }
+    .cat-badge.cat-excel { background: var(--success-soft); color: var(--success); border-color: rgba(16, 185, 129, 0.35); }
+    .cat-badge.cat-doc { background: rgba(139, 92, 246, 0.14); color: #a78bfa; border-color: rgba(139, 92, 246, 0.35); }
+    body:not(.dark-mode) .cat-badge.cat-doc { background: #f5f3ff; color: #6d28d9; border-color: #ddd6fe; }
+    .cat-badge.cat-link { background: rgba(14, 165, 233, 0.14); color: #38bdf8; border-color: rgba(14, 165, 233, 0.35); }
+    body:not(.dark-mode) .cat-badge.cat-link { background: #f0f9ff; color: #0369a1; border-color: #bae6fd; }
+
+    .cat-inline-select {
+      padding: 3px 6px;
+      font-size: 11px;
+      border-radius: 4px;
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-mid);
+    }
 
     .doc-info { min-width: 0; flex: 1; }
     .doc-title {
@@ -524,9 +551,9 @@
       overflow: hidden;
       text-overflow: ellipsis;
       margin-top: 2px;
-      padding-left: 20px;
+      padding-left: 22px;
     }
-    .doc-actions { display: flex; gap: 5px; flex-shrink: 0; }
+    .doc-actions { display: flex; gap: 5px; align-items: center; flex-shrink: 0; }
 
     .right-body {
       padding: 14px;
@@ -579,10 +606,9 @@
       align-items: center;
       justify-content: space-between;
       gap: 6px;
-      cursor: grab;
+      cursor: default;
       box-shadow: var(--shadow-sm);
     }
-    .fav-card:active { cursor: grabbing; }
     .fav-card.dragging { opacity: 0.45; border-style: dashed; }
     .fav-card.drag-target-top { border-top: 3px solid var(--accent); }
     .fav-card.drag-target-bottom { border-bottom: 3px solid var(--accent); }
@@ -605,16 +631,17 @@
       line-height: 1.55;
     }
 
+    /* --- 책상 위 타공판(Pegboard) 스타일 위젯 캔버스 --- */
     .widget-section {
       margin: 0 14px 18px 14px;
       background: var(--bg-surface);
-      border: 1px solid var(--border-light);
+      border: 1px solid var(--border-mid);
       border-radius: var(--radius-lg);
       overflow: hidden;
       box-shadow: var(--shadow-sm);
     }
     .widget-section-header {
-      background: var(--navy-900);
+      background: linear-gradient(90deg, var(--navy-950) 0%, var(--navy-900) 100%);
       color: #f8fafc;
       padding: 10px 16px;
       display: flex;
@@ -625,13 +652,25 @@
       font-size: 12px;
       border-bottom: 1px solid var(--border-light);
     }
+    .pegboard-tag {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(59, 130, 246, 0.2);
+      color: #bfdbfe;
+      border: 1px solid rgba(147, 197, 253, 0.35);
+    }
     .widget-canvas {
       position: relative;
       min-height: 540px;
       width: 100%;
-      background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
-      background-size: 20px 20px;
       background-color: var(--bg-canvas);
+      background-image:
+        radial-gradient(circle at 50% 50%, var(--peg-hole) 2.2px, transparent 2.8px),
+        radial-gradient(circle at 50% 62%, var(--peg-highlight) 1.6px, transparent 2.4px);
+      background-size: 20px 20px;
+      box-shadow: inset 0 2px 10px rgba(2, 6, 23, 0.14);
       overflow: auto;
     }
     .widget-canvas.drop-highlight {
@@ -646,7 +685,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       font-size: 13px;
       gap: 6px;
       pointer-events: none;
@@ -658,6 +697,7 @@
       position: absolute;
       background: var(--bg-surface);
       border: 1px solid var(--border-mid);
+      border-top: 3px solid var(--accent);
       border-radius: 10px;
       box-shadow: var(--shadow-md);
       display: flex;
@@ -669,7 +709,7 @@
     }
     .w-card.active-drag {
       z-index: 20;
-      box-shadow: 0 16px 30px -6px rgba(29, 78, 216, 0.28);
+      box-shadow: 0 18px 34px -6px rgba(29, 78, 216, 0.32);
       border-color: var(--accent);
     }
     .w-header {
@@ -690,8 +730,16 @@
     .w-title-wrap {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 7px;
       min-width: 0;
+    }
+    .peg-pin {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.5), 0 1px 2px rgba(0, 0, 0, 0.25);
+      flex-shrink: 0;
     }
     .w-title-text {
       white-space: nowrap;
@@ -830,6 +878,7 @@
       <span class="brand-title">WD Corperation</span>
       <span class="header-divider"></span>
       <span class="badge">INTRANET WORKSPACE</span>
+      <span class="toast-text" id="toastMsg"></span>
     </div>
     <div class="header-actions">
       <button class="theme-btn small" id="btnToggleTheme" title="라이트 모드 / 다크 모드 전환">다크 모드</button>
@@ -842,11 +891,6 @@
       <input type="file" id="importFile" accept=".json" style="display:none;" />
     </div>
   </header>
-
-  <div class="notice-bar">
-    <span><strong>안내:</strong> 폴더나 파일을 드래그해 추가한 뒤 <strong>더블클릭</strong>하면 폴더가 열리거나 연결된 프로그램으로 파일이 바로 실행됩니다.</span>
-    <span class="toast-text" id="toastMsg"></span>
-  </div>
 
   <div class="main-grid">
     <section class="panel">
@@ -900,25 +944,31 @@
         <form class="add-form" id="docForm">
           <select id="docType">
             <option value="folder">폴더</option>
-            <option value="excel">Excel</option>
-            <option value="word">Word/문서</option>
-            <option value="other">기타 파일</option>
+            <option value="file">파일</option>
+            <option value="excel">엑셀</option>
+            <option value="doc">문서</option>
+            <option value="link">링크</option>
+            <option value="other">기타</option>
           </select>
           <input type="text" id="docName" placeholder="이름 (예: 2026년 견적서 모음)" required />
-          <input type="text" id="docPath" placeholder="NAS 경로 (예: Z:\영업부\견적서\2026)" required />
+          <input type="text" id="docPath" placeholder="경로 또는 URL (예: Z:\영업부\견적서\2026)" required />
           <button type="submit">목록 추가</button>
         </form>
 
         <div class="filter-bar">
           <input type="text" id="docSearch" placeholder="이름 또는 경로로 검색..." />
           <select id="docFilterType">
-            <option value="all">전체 유형</option>
-            <option value="folder">폴더만</option>
-            <option value="excel">Excel</option>
-            <option value="word">Word/문서</option>
+            <option value="all">전체 카테고리</option>
+            <option value="folder">폴더</option>
+            <option value="file">파일</option>
+            <option value="excel">엑셀</option>
+            <option value="doc">문서</option>
+            <option value="link">링크</option>
             <option value="other">기타</option>
           </select>
         </div>
+
+        <div class="doc-drop-hint">여기에 파일이나 폴더를 드래그해 추가하고, :: 핸들로 순서를 바꿀 수 있습니다.</div>
 
         <div class="doc-list" id="docList"></div>
       </div>
@@ -961,21 +1011,22 @@
   <section class="widget-section">
     <div class="widget-section-header">
       <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-        <strong>업무 위젯 캔버스</strong>
-        <span style="color:#cbd5e1;">제목줄 드래그로 위치 이동 · 우측 하단 코너 드래그로 크기 조절</span>
+        <strong>책상 타공판 위젯 보드</strong>
+        <span class="pegboard-tag">PEGBOARD DESK</span>
+        <span style="color:#cbd5e1;">제목줄 드래그로 핀 위치 이동 · 우측 하단 코너 드래그로 크기 조절</span>
       </div>
       <div style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
         <span id="activeWidgetCount" style="color:#93c5fd; font-weight:700;">0개 위젯 배치됨</span>
-        <button class="snap-btn small active" id="btnToggleSnap" title="20px 격자 스냅 켜기/끄기">격자 스냅: ON</button>
-        <button class="preset-btn small" id="btnApplyPreset" title="사내 업무용 기본 위젯 6종 자동 배치">기본 프리셋 배치</button>
+        <button class="snap-btn small active" id="btnToggleSnap" title="20px 타공 홀 스냅 켜기/끄기">홀 스냅: ON</button>
+        <button class="preset-btn small" id="btnApplyPreset" title="책상 타공판 기본 위젯 6종 배치">타공판 기본 배치</button>
         <button class="widget-btn small" id="btnOpenWidgets2">+ 위젯 추가</button>
         <button class="ghost small" id="btnClearWidgets">모두 지우기</button>
       </div>
     </div>
     <div class="widget-canvas" id="widgetCanvas">
       <div class="canvas-placeholder" id="canvasPlaceholder">
-        <div>상단의 <strong>[기본 프리셋 배치]</strong>를 누르거나 <strong>[위젯 (30종)]</strong> 버튼으로 위젯을 추가해 보세요.</div>
-        <div style="font-size:11px;">위젯 제목줄을 드래그해 원하는 위치에 놓고, 우측 하단 코너를 드래그해 크기를 조절할 수 있습니다.</div>
+        <div>상단의 <strong>[타공판 기본 배치]</strong>를 누르거나 <strong>[위젯 (30종)]</strong> 버튼으로 업무 모듈을 걸어 보세요.</div>
+        <div style="font-size:11px;">위젯 상단 제목줄을 끌어 타공판 위치에 고정하고, 우측 하단 모서리를 끌어 크기를 맞출 수 있습니다.</div>
       </div>
     </div>
   </section>
@@ -983,11 +1034,11 @@
   <div class="modal-backdrop" id="widgetPickerModal">
     <div class="modal widget-picker-modal">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h3>사내 업무 위젯 모음 (30종)</h3>
+        <h3>타공판 업무 위젯 모음 (30종)</h3>
         <button class="secondary small" id="btnClosePicker">닫기</button>
       </div>
       <p style="font-size:12px; color:var(--text-secondary);">
-        원하는 위젯의 <strong>[+ 추가]</strong>를 누르거나, 카드를 아래 위젯 캔버스에 드래그해 놓으세요.
+        원하는 위젯의 <strong>[+ 추가]</strong>를 누르거나, 카드를 아래 타공판 보드에 드래그해 놓으세요.
       </p>
       <div class="picker-top">
         <input type="text" id="widgetSearchInput" placeholder="위젯 이름 또는 기능 검색..." style="flex:1; min-width:180px;" />
@@ -1023,6 +1074,15 @@
       theme: 'wd_corp_theme_v1'
     };
 
+    const CATEGORY_META = {
+      folder: { label: '폴더', cls: 'cat-folder' },
+      file: { label: '파일', cls: '' },
+      excel: { label: '엑셀', cls: 'cat-excel' },
+      doc: { label: '문서', cls: 'cat-doc' },
+      link: { label: '링크', cls: 'cat-link' },
+      other: { label: '기타', cls: '' }
+    };
+
     const GRID_SIZE = 20;
 
     let docs = JSON.parse(localStorage.getItem(STORAGE_KEYS.docs) || '[]');
@@ -1037,6 +1097,7 @@
     let viewYear, viewMonth;
     let selectedDateStr = formatDate(new Date());
     let draggingFavId = null;
+    let draggingDocId = null;
 
     let tokenClient = null;
     let googleAccessToken = null;
@@ -1080,6 +1141,10 @@
         alert('열 수 있는 경로 정보가 없습니다.');
         return;
       }
+      if (/^https?:\/\//i.test(item.path)) {
+        window.open(item.path, '_blank', 'noopener');
+        return;
+      }
       if (window.wdDesktop && typeof window.wdDesktop.openPath === 'function') {
         const res = await window.wdDesktop.openPath(item.path);
         if (!res.ok) {
@@ -1100,19 +1165,18 @@
       return `${y}-${m}-${day}`;
     }
 
-    function typeBadgeHtml(type) {
-      if (type === 'folder') return `<span class="type-tag folder">FOLDER</span>`;
-      if (type === 'excel') return `<span class="type-tag excel">EXCEL</span>`;
-      if (type === 'word') return `<span class="type-tag word">DOC</span>`;
-      return `<span class="type-tag">FILE</span>`;
+    function categoryBadgeHtml(type) {
+      const meta = CATEGORY_META[type] || CATEGORY_META.file;
+      return `<span class="cat-badge ${meta.cls}">${escapeHtml(meta.label)}</span>`;
     }
 
-    function detectTypeByName(name) {
+    function detectCategoryByName(name, pathStr = '') {
+      if (/^https?:\/\//i.test(pathStr)) return 'link';
       const lower = String(name || '').toLowerCase();
       if (lower.endsWith('.xlsx') || lower.endsWith('.xls') || lower.endsWith('.csv')) return 'excel';
-      if (lower.endsWith('.docx') || lower.endsWith('.doc') || lower.endsWith('.hwp') || lower.endsWith('.hwpx') || lower.endsWith('.pdf')) return 'word';
+      if (lower.endsWith('.docx') || lower.endsWith('.doc') || lower.endsWith('.hwp') || lower.endsWith('.hwpx') || lower.endsWith('.pdf') || lower.endsWith('.txt')) return 'doc';
       if (!lower.includes('.')) return 'folder';
-      return 'other';
+      return 'file';
     }
 
     function saveAll() {
@@ -1133,6 +1197,7 @@
         .replace(/"/g, '&quot;');
     }
 
+    // --- Google OAuth & Calendar API ---
     function initGoogleTokenClient() {
       if (!googleClientId || !window.google?.accounts?.oauth2) return;
       tokenClient = google.accounts.oauth2.initTokenClient({
@@ -1293,6 +1358,7 @@
       }
     });
 
+    // --- 캘린더 & 메모 ---
     function initCalendar() {
       const now = new Date();
       viewYear = now.getFullYear();
@@ -1366,6 +1432,7 @@
       renderCalendar();
     });
 
+    // --- 문서/폴더/링크 목록 관리 (카테고리 변경 · 드래그 추가 · 드래그 순서 정렬) ---
     document.getElementById('docForm').addEventListener('submit', (e) => {
       e.preventDefault();
       const type = document.getElementById('docType').value;
@@ -1381,6 +1448,16 @@
       renderFavs();
       showToast('목록에 추가되었습니다.');
     });
+
+    function changeDocCategory(id, newType) {
+      const target = docs.find((d) => d.id === id);
+      if (!target) return;
+      target.type = newType;
+      saveAll();
+      renderDocs();
+      renderFavs();
+      showToast(`카테고리가 '${CATEGORY_META[newType]?.label || newType}'으로 변경되었습니다.`);
+    }
 
     function addFavoriteById(id) {
       if (!favIds.includes(id)) {
@@ -1411,16 +1488,76 @@
       renderFavs();
     }
 
+    function clearDocDropIndicators() {
+      document.querySelectorAll('.doc-row.drag-target-top, .doc-row.drag-target-bottom').forEach((el) => {
+        el.classList.remove('drag-target-top', 'drag-target-bottom');
+      });
+    }
+
     function clearFavDropIndicators() {
       document.querySelectorAll('.fav-card.drag-target-top, .fav-card.drag-target-bottom').forEach((el) => {
         el.classList.remove('drag-target-top', 'drag-target-bottom');
       });
     }
 
+    function addDroppedFilesToDocs(fileList, alsoFavorite = false) {
+      if (!fileList || fileList.length === 0) return;
+      Array.from(fileList).forEach((file) => {
+        const newId = String(Date.now() + Math.random());
+        const resolvedPath =
+          (window.wdDesktop && typeof window.wdDesktop.getPathForFile === 'function'
+            ? window.wdDesktop.getPathForFile(file)
+            : '') ||
+          file.path ||
+          file.name;
+
+        docs.unshift({
+          id: newId,
+          type: detectCategoryByName(file.name, resolvedPath),
+          name: file.name,
+          path: resolvedPath
+        });
+        if (alsoFavorite) favIds.push(newId);
+      });
+      saveAll();
+      renderDocs();
+      renderFavs();
+      showToast(`${fileList.length}개 항목이 ${alsoFavorite ? '즐겨찾기 및 ' : ''}목록에 추가되었습니다.`);
+    }
+
+    const docListEl = document.getElementById('docList');
+
+    docListEl.addEventListener('dragover', (e) => {
+      if (draggingDocId || (e.dataTransfer.types && e.dataTransfer.types.includes('Files'))) {
+        e.preventDefault();
+        if (!draggingDocId) docListEl.classList.add('drag-over');
+      }
+    });
+
+    docListEl.addEventListener('dragleave', (e) => {
+      if (!docListEl.contains(e.relatedTarget)) {
+        docListEl.classList.remove('drag-over');
+        clearDocDropIndicators();
+      }
+    });
+
+    docListEl.addEventListener('drop', (e) => {
+      e.preventDefault();
+      docListEl.classList.remove('drag-over');
+      clearDocDropIndicators();
+      if (draggingDocId) {
+        draggingDocId = null;
+        return;
+      }
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        addDroppedFilesToDocs(e.dataTransfer.files, false);
+      }
+    });
+
     function renderDocs() {
       const q = document.getElementById('docSearch').value.trim().toLowerCase();
       const filterType = document.getElementById('docFilterType').value;
-      const listEl = document.getElementById('docList');
+      const isUnfiltered = !q && filterType === 'all';
 
       const filtered = docs.filter((d) => {
         const matchType = filterType === 'all' || d.type === filterType;
@@ -1429,10 +1566,10 @@
       });
 
       document.getElementById('docCount').textContent = `${filtered.length}개 항목`;
-      listEl.innerHTML = '';
+      docListEl.innerHTML = '';
 
       if (!filtered.length) {
-        listEl.innerHTML = `<div class="empty">등록된 항목이 없습니다. 상단 입력란에서 자주 쓰는 NAS 폴더나 문서 경로를 추가해 보세요.</div>`;
+        docListEl.innerHTML = `<div class="empty">등록된 항목이 없습니다. 파일·폴더를 드래그하거나 상단 입력란에서 추가해 보세요.</div>`;
         return;
       }
 
@@ -1440,15 +1577,56 @@
         const isFav = favIds.includes(d.id);
         const row = document.createElement('div');
         row.className = 'doc-row';
-        row.draggable = true;
 
-        row.addEventListener('dragstart', (e) => {
+        const handle = document.createElement('span');
+        handle.className = 'drag-handle';
+        handle.textContent = '::';
+        handle.title = isUnfiltered ? '위아래로 끌어 순서 변경 · 즐겨찾기로 드래그' : '즐겨찾기로 드래그 (전체 보기에서 순서 변경 가능)';
+        handle.draggable = true;
+
+        handle.addEventListener('dragstart', (e) => {
           draggingFavId = null;
+          draggingDocId = d.id;
           row.classList.add('dragging');
           e.dataTransfer.setData('text/plain', d.id);
-          e.dataTransfer.effectAllowed = 'copy';
+          e.dataTransfer.effectAllowed = 'copyMove';
         });
-        row.addEventListener('dragend', () => row.classList.remove('dragging'));
+
+        handle.addEventListener('dragend', () => {
+          draggingDocId = null;
+          row.classList.remove('dragging');
+          clearDocDropIndicators();
+          docListEl.classList.remove('drag-over');
+        });
+
+        row.addEventListener('dragover', (e) => {
+          if (!draggingDocId || draggingDocId === d.id || !isUnfiltered) return;
+          e.preventDefault();
+          e.stopPropagation();
+          clearDocDropIndicators();
+          const rect = row.getBoundingClientRect();
+          row.classList.add(e.clientY < rect.top + rect.height / 2 ? 'drag-target-top' : 'drag-target-bottom');
+        });
+
+        row.addEventListener('drop', (e) => {
+          if (!draggingDocId || draggingDocId === d.id || !isUnfiltered) return;
+          e.preventDefault();
+          e.stopPropagation();
+          const rect = row.getBoundingClientRect();
+          const insertAfter = e.clientY >= rect.top + rect.height / 2;
+          const fromIndex = docs.findIndex((x) => x.id === draggingDocId);
+          if (fromIndex === -1) return;
+          const [moved] = docs.splice(fromIndex, 1);
+          let targetIndex = docs.findIndex((x) => x.id === d.id);
+          if (targetIndex === -1) return;
+          if (insertAfter) targetIndex += 1;
+          docs.splice(targetIndex, 0, moved);
+          draggingDocId = null;
+          clearDocDropIndicators();
+          saveAll();
+          renderDocs();
+          showToast('목록 순서가 변경되었습니다.');
+        });
 
         row.addEventListener('dblclick', (e) => {
           if (e.target.closest('button, input, select')) return;
@@ -1459,15 +1637,30 @@
         info.className = 'doc-info';
         info.innerHTML = `
           <div class="doc-title">
-            <span class="drag-handle" title="끌어서 즐겨찾기에 추가">::</span>
-            ${typeBadgeHtml(d.type)}
+            ${categoryBadgeHtml(d.type)}
             <span class="doc-name-text">${escapeHtml(d.name)}</span>
           </div>
           <div class="doc-path" title="${escapeHtml(d.path)}">${escapeHtml(d.path)}</div>
         `;
+        info.querySelector('.doc-title').prepend(handle);
 
         const actions = document.createElement('div');
         actions.className = 'doc-actions';
+
+        const catSel = document.createElement('select');
+        catSel.className = 'cat-inline-select';
+        catSel.title = '카테고리 변경';
+        Object.entries(CATEGORY_META).forEach(([key, meta]) => {
+          const opt = document.createElement('option');
+          opt.value = key;
+          opt.textContent = meta.label;
+          if (d.type === key) opt.selected = true;
+          catSel.appendChild(opt);
+        });
+        catSel.onchange = (e) => {
+          e.stopPropagation();
+          changeDocCategory(d.id, e.target.value);
+        };
 
         const favBtn = document.createElement('button');
         favBtn.className = 'secondary small';
@@ -1484,9 +1677,9 @@
         delBtn.textContent = '삭제';
         delBtn.onclick = () => deleteDoc(d.id);
 
-        actions.append(favBtn, copyBtn, delBtn);
+        actions.append(catSel, favBtn, copyBtn, delBtn);
         row.append(info, actions);
-        listEl.appendChild(row);
+        docListEl.appendChild(row);
       });
     }
 
@@ -1515,35 +1708,15 @@
         return;
       }
 
-      const draggedDocId = e.dataTransfer.getData('text/plain');
-      if (draggedDocId && docs.some((d) => d.id === draggedDocId)) {
-        addFavoriteById(draggedDocId);
+      const draggedId = e.dataTransfer.getData('text/plain') || draggingDocId;
+      draggingDocId = null;
+      if (draggedId && docs.some((d) => d.id === draggedId)) {
+        addFavoriteById(draggedId);
         return;
       }
 
-      const droppedFiles = e.dataTransfer.files;
-      if (droppedFiles && droppedFiles.length > 0) {
-        Array.from(droppedFiles).forEach((file) => {
-          const newId = String(Date.now() + Math.random());
-          const resolvedPath =
-            (window.wdDesktop && typeof window.wdDesktop.getPathForFile === 'function'
-              ? window.wdDesktop.getPathForFile(file)
-              : '') ||
-            file.path ||
-            file.name;
-
-          docs.unshift({
-            id: newId,
-            type: detectTypeByName(file.name),
-            name: file.name,
-            path: resolvedPath
-          });
-          favIds.push(newId);
-        });
-        saveAll();
-        renderDocs();
-        renderFavs();
-        showToast(`${droppedFiles.length}개 항목이 즐겨찾기에 추가되었습니다.`);
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        addDroppedFilesToDocs(e.dataTransfer.files, true);
       }
     });
 
@@ -1566,20 +1739,6 @@
       favDocs.forEach((d) => {
         const card = document.createElement('div');
         card.className = 'fav-card';
-        card.draggable = true;
-
-        card.addEventListener('dragstart', (e) => {
-          e.stopPropagation();
-          draggingFavId = d.id;
-          card.classList.add('dragging');
-          e.dataTransfer.effectAllowed = 'move';
-        });
-
-        card.addEventListener('dragend', () => {
-          draggingFavId = null;
-          card.classList.remove('dragging');
-          clearFavDropIndicators();
-        });
 
         card.addEventListener('dragover', (e) => {
           if (!draggingFavId || draggingFavId === d.id) return;
@@ -1615,16 +1774,35 @@
           openTargetItem(d);
         });
 
-        card.innerHTML = `
-          <div style="min-width:0; flex:1; display:flex; align-items:center; gap:6px;">
-            <span class="drag-handle" title="위아래로 끌어 순서 변경">::</span>
-            ${typeBadgeHtml(d.type)}
-            <div style="min-width:0; flex:1;">
-              <div style="font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(d.name)}</div>
-              <div style="font-size:11px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(d.path)}</div>
-            </div>
+        const handle = document.createElement('span');
+        handle.className = 'drag-handle';
+        handle.textContent = '::';
+        handle.title = '위아래로 끌어 순서 변경';
+        handle.draggable = true;
+
+        handle.addEventListener('dragstart', (e) => {
+          e.stopPropagation();
+          draggingFavId = d.id;
+          card.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+        });
+
+        handle.addEventListener('dragend', () => {
+          draggingFavId = null;
+          card.classList.remove('dragging');
+          clearFavDropIndicators();
+        });
+
+        const leftWrap = document.createElement('div');
+        leftWrap.style.cssText = 'min-width:0; flex:1; display:flex; align-items:center; gap:6px;';
+        leftWrap.appendChild(handle);
+        leftWrap.insertAdjacentHTML('beforeend', `
+          ${categoryBadgeHtml(d.type)}
+          <div style="min-width:0; flex:1;">
+            <div style="font-size:12px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(d.name)}</div>
+            <div style="font-size:11px; color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(d.path)}</div>
           </div>
-        `;
+        `);
 
         const copyBtn = document.createElement('button');
         copyBtn.className = 'small';
@@ -1636,11 +1814,12 @@
         rmBtn.textContent = '해제';
         rmBtn.onclick = () => toggleFav(d.id);
 
-        card.append(copyBtn, rmBtn);
+        card.append(leftWrap, copyBtn, rmBtn);
         listEl.appendChild(card);
       });
     }
 
+    // --- 자주 쓰는 웹 링크 ---
     document.getElementById('linkForm').addEventListener('submit', (e) => {
       e.preventDefault();
       const title = document.getElementById('linkTitle').value.trim();
@@ -1687,6 +1866,9 @@
       });
     }
 
+    // =========================================================================
+    // 책상 타공판(Pegboard) 위젯 시스템 (포커스 유지 · 핀 이동 · 리사이즈)
+    // =========================================================================
     const WIDGET_CATALOG = [
       { type: 'vat_calc', title: 'VAT·공급가액 계산기', cat: '재무·견적', desc: '공급가액과 부가세(10%), 합계를 즉시 계산합니다.' },
       { type: 'margin_calc', title: '마진율·할인가 계산기', cat: '재무·견적', desc: '원가와 판매가로 순이익 및 마진율(%)을 계산합니다.' },
@@ -1765,7 +1947,7 @@
 
     function updateSnapButtonUI() {
       const btn = document.getElementById('btnToggleSnap');
-      btn.textContent = `격자 스냅: ${gridSnapEnabled ? 'ON' : 'OFF'}`;
+      btn.textContent = `홀 스냅: ${gridSnapEnabled ? 'ON' : 'OFF'}`;
       btn.classList.toggle('active', gridSnapEnabled);
     }
 
@@ -1773,11 +1955,11 @@
       gridSnapEnabled = !gridSnapEnabled;
       saveAll();
       updateSnapButtonUI();
-      showToast(`격자 스냅이 ${gridSnapEnabled ? '활성화' : '비활성화'}되었습니다.`);
+      showToast(`타공판 홀 스냅이 ${gridSnapEnabled ? '활성화' : '비활성화'}되었습니다.`);
     });
 
     document.getElementById('btnApplyPreset').addEventListener('click', () => {
-      if (placedWidgets.length > 0 && !confirm('현재 캔버스에 배치된 위젯을 사내 기본 프리셋으로 교체할까요?')) {
+      if (placedWidgets.length > 0 && !confirm('현재 타공판에 배치된 위젯을 기본 6종 프리셋으로 교체할까요?')) {
         return;
       }
       const presetTypes = [
@@ -1789,7 +1971,7 @@
         'scratch_memo'
       ];
       const colWidth = 340;
-      const rowHeight = 230;
+      const rowHeight = 240;
       const cardW = 320;
       const cardH = 200;
 
@@ -1811,7 +1993,7 @@
 
       saveAll();
       renderCanvasWidgets();
-      showToast('사내 업무용 기본 위젯 6종 프리셋이 배치되었습니다.');
+      showToast('타공판 기본 위젯 6종이 배치되었습니다.');
     });
 
     function renderWidgetCatTabs() {
@@ -1874,8 +2056,8 @@
       if (!meta) return;
 
       const idx = placedWidgets.length;
-      const rawX = x !== null ? Math.max(12, x) : 20 + (idx % 3) * 330;
-      const rawY = y !== null ? Math.max(12, y) : 20 + Math.floor(idx / 3) * 230;
+      const rawX = x !== null ? Math.max(20, x) : 20 + (idx % 3) * 340;
+      const rawY = y !== null ? Math.max(20, y) : 20 + Math.floor(idx / 3) * 240;
 
       placedWidgets.push({
         id: 'w_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
@@ -1883,13 +2065,13 @@
         title: meta.title,
         x: snapValue(rawX),
         y: snapValue(rawY),
-        w: snapValue(310),
-        h: snapValue(215),
+        w: snapValue(320),
+        h: snapValue(220),
         state: defaultStateForWidget(type)
       });
       saveAll();
       renderCanvasWidgets();
-      showToast(`'${meta.title}' 위젯이 추가되었습니다.`);
+      showToast(`'${meta.title}' 위젯이 타공판에 추가되었습니다.`);
     }
 
     function removeWidget(id) {
@@ -1993,7 +2175,6 @@
       bodyEl.append(ta, bar);
     }
 
-    // 입력 시 전체 DOM을 다시 그리지 않고 결과 표시만 갱신해 연속 타이핑 포커스를 유지합니다.
     function buildWidgetContent(bodyEl, wObj) {
       const s = wObj.state;
       switch (wObj.type) {
@@ -2487,7 +2668,7 @@
         header.className = 'w-header';
         header.innerHTML = `
           <div class="w-title-wrap">
-            <span style="color:var(--text-muted); font-weight:800;">::</span>
+            <span class="peg-pin" title="타공판 고정 핀"></span>
             <span class="w-title-text">${escapeHtml(wObj.title)}</span>
           </div>
         `;
@@ -2642,13 +2823,14 @@
     document.getElementById('widgetSearchInput').addEventListener('input', renderWidgetPickerGrid);
     document.getElementById('btnClearWidgets').addEventListener('click', () => {
       if (!placedWidgets.length) return;
-      if (confirm('캔버스에 배치된 위젯을 모두 지울까요?')) {
+      if (confirm('타공판에 배치된 위젯을 모두 지울까요?')) {
         placedWidgets = [];
         saveAll();
         renderCanvasWidgets();
       }
     });
 
+    // --- 백업 / 복원 ---
     document.getElementById('btnExport').addEventListener('click', () => {
       const payload = { docs, favIds, memos, links, placedWidgets, gridSnapEnabled, isDarkMode, exportedAt: new Date().toISOString() };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
