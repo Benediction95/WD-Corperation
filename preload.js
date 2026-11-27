@@ -1,5 +1,12 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 contextBridge.exposeInMainWorld('wdDesktop', {
-  openPath: (targetPath) => ipcRenderer.invoke('open-path', targetPath)
+  openPath: (targetPath) => ipcRenderer.invoke('open-path', targetPath),
+  getPathForFile: (file) => {
+    try {
+      return webUtils.getPathForFile(file) || file.path || '';
+    } catch {
+      return file.path || '';
+    }
+  }
 });
