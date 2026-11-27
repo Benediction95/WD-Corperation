@@ -1,16 +1,16 @@
 {
-  "name": "wd-corporation-hub",
-  "productName": "WD CORPORATION",
+  "name": "wd-corperation-hub",
+  "productName": "WD Corperation",
   "version": "1.0.0",
-  "description": "WD CORPORATION 사내 인트라넷 업무 허브",
+  "description": "WD Corperation 사내 인트라넷 업무 허브",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "dist": "electron-builder --win"
   },
   "build": {
-    "appId": "com.wdcorporation.hub",
-    "productName": "WD CORPORATION",
+    "appId": "com.wdcorperation.hub",
+    "productName": "WD Corperation",
     "directories": {
       "output": "dist"
     },
@@ -29,14 +29,14 @@
           ]
         }
       ],
-      "artifactName": "WD_Corporation_Setup_${version}.${ext}"
+      "artifactName": "WD_Corperation_Setup_${version}.${ext}"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "WD CORPORATION"
+      "shortcutName": "WD Corperation"
     }
   },
   "devDependencies": {
