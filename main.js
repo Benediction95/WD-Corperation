@@ -16,7 +16,7 @@ function createWindow() {
     height: 920,
     minWidth: 1120,
     minHeight: 720,
-    title: 'WD CORPORATION',
+    title: 'WD Corperation',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
