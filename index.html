@@ -1522,29 +1522,29 @@
       }
 
       const droppedFiles = e.dataTransfer.files;
-if (droppedFiles && droppedFiles.length > 0) {
-  Array.from(droppedFiles).forEach((file) => {
-    const newId = String(Date.now() + Math.random());
-    const resolvedPath =
-      (window.wdDesktop && typeof window.wdDesktop.getPathForFile === 'function'
-        ? window.wdDesktop.getPathForFile(file)
-        : '') ||
-      file.path ||
-      file.name;
+      if (droppedFiles && droppedFiles.length > 0) {
+        Array.from(droppedFiles).forEach((file) => {
+          const newId = String(Date.now() + Math.random());
+          const resolvedPath =
+            (window.wdDesktop && typeof window.wdDesktop.getPathForFile === 'function'
+              ? window.wdDesktop.getPathForFile(file)
+              : '') ||
+            file.path ||
+            file.name;
 
-    docs.unshift({
-      id: newId,
-      type: detectTypeByName(file.name),
-      name: file.name,
-      path: resolvedPath
-    });
-    favIds.push(newId);
-  });
-  saveAll();
-  renderDocs();
-  renderFavs();
-  showToast(`${droppedFiles.length}개 항목이 즐겨찾기에 추가되었습니다.`);
-}
+          docs.unshift({
+            id: newId,
+            type: detectTypeByName(file.name),
+            name: file.name,
+            path: resolvedPath
+          });
+          favIds.push(newId);
+        });
+        saveAll();
+        renderDocs();
+        renderFavs();
+        showToast(`${droppedFiles.length}개 항목이 즐겨찾기에 추가되었습니다.`);
+      }
     });
 
     function renderFavs() {
@@ -1909,12 +1909,19 @@ if (droppedFiles && droppedFiles.length > 0) {
       const addBtn = document.createElement('button');
       addBtn.className = 'small';
       addBtn.textContent = '추가';
-      addBtn.onclick = () => {
+      const addItem = () => {
         if (!inp.value.trim()) return;
         items.push({ text: inp.value.trim(), done: false });
         wObj.state[keyName] = items;
         saveAll();
         renderCanvasWidgets();
+      };
+      addBtn.onclick = addItem;
+      inp.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          addItem();
+        }
       };
       row.append(inp, addBtn);
       bodyEl.appendChild(row);
@@ -1986,81 +1993,131 @@ if (droppedFiles && droppedFiles.length > 0) {
       bodyEl.append(ta, bar);
     }
 
+    // 입력 시 전체 DOM을 다시 그리지 않고 결과 표시만 갱신해 연속 타이핑 포커스를 유지합니다.
     function buildWidgetContent(bodyEl, wObj) {
       const s = wObj.state;
       switch (wObj.type) {
         case 'vat_calc': {
-          const supply = Number(s.supply || 0);
-          const vat = Math.round(supply * 0.1);
-          const total = supply + vat;
+          const supplyInit = Number(s.supply || 0);
+          const vatInit = Math.round(supplyInit * 0.1);
+          const totalInit = supplyInit + vatInit;
           bodyEl.innerHTML = `
-            <input type="number" value="${supply}" placeholder="공급가액 입력" />
-            <div class="w-stat">부가세(10%): ${vat.toLocaleString()}원<br/>합계금액: ${total.toLocaleString()}원</div>
+            <input type="number" id="sup_${wObj.id}" value="${supplyInit}" placeholder="공급가액 입력" />
+            <div class="w-stat" id="stat_${wObj.id}">부가세(10%): ${vatInit.toLocaleString()}원<br/>합계금액: ${totalInit.toLocaleString()}원</div>
           `;
-          bodyEl.querySelector('input').oninput = (e) => {
-            s.supply = Number(e.target.value || 0);
+          const inp = bodyEl.querySelector(`#sup_${wObj.id}`);
+          const statEl = bodyEl.querySelector(`#stat_${wObj.id}`);
+          inp.addEventListener('input', (e) => {
+            const supply = Number(e.target.value || 0);
+            const vat = Math.round(supply * 0.1);
+            const total = supply + vat;
+            s.supply = supply;
             saveAll();
-            renderCanvasWidgets();
-          };
+            if (statEl) {
+              statEl.innerHTML = `부가세(10%): ${vat.toLocaleString()}원<br/>합계금액: ${total.toLocaleString()}원`;
+            }
+          });
           break;
         }
         case 'margin_calc': {
-          const cost = Number(s.cost || 0);
-          const price = Number(s.price || 0);
-          const profit = price - cost;
-          const rate = price > 0 ? ((profit / price) * 100).toFixed(1) : '0.0';
+          const costInit = Number(s.cost || 0);
+          const priceInit = Number(s.price || 0);
+          const profitInit = priceInit - costInit;
+          const rateInit = priceInit > 0 ? ((profitInit / priceInit) * 100).toFixed(1) : '0.0';
           bodyEl.innerHTML = `
             <div style="display:flex; gap:4px;">
-              <input type="number" id="c_${wObj.id}" value="${cost}" placeholder="원가" style="width:50%;" />
-              <input type="number" id="p_${wObj.id}" value="${price}" placeholder="판매가" style="width:50%;" />
+              <input type="number" id="c_${wObj.id}" value="${costInit}" placeholder="원가" style="width:50%;" />
+              <input type="number" id="p_${wObj.id}" value="${priceInit}" placeholder="판매가" style="width:50%;" />
             </div>
-            <div class="w-stat">이익: ${profit.toLocaleString()}원 · 마진율: ${rate}%</div>
+            <div class="w-stat" id="stat_${wObj.id}">이익: ${profitInit.toLocaleString()}원 · 마진율: ${rateInit}%</div>
           `;
-          bodyEl.querySelector(`#c_${wObj.id}`).oninput = (e) => { s.cost = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
-          bodyEl.querySelector(`#p_${wObj.id}`).oninput = (e) => { s.price = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
+          const cInp = bodyEl.querySelector(`#c_${wObj.id}`);
+          const pInp = bodyEl.querySelector(`#p_${wObj.id}`);
+          const statEl = bodyEl.querySelector(`#stat_${wObj.id}`);
+          const refresh = () => {
+            const cost = Number(cInp.value || 0);
+            const price = Number(pInp.value || 0);
+            const profit = price - cost;
+            const rate = price > 0 ? ((profit / price) * 100).toFixed(1) : '0.0';
+            s.cost = cost;
+            s.price = price;
+            saveAll();
+            if (statEl) statEl.textContent = `이익: ${profit.toLocaleString()}원 · 마진율: ${rate}%`;
+          };
+          cInp.addEventListener('input', refresh);
+          pInp.addEventListener('input', refresh);
           break;
         }
         case 'wage_calc': {
-          const m = Number(s.monthly || 0);
-          const daily = Math.round(m / 20.9);
-          const hourly = Math.round(m / 209);
+          const mInit = Number(s.monthly || 0);
+          const dailyInit = Math.round(mInit / 20.9);
+          const hourlyInit = Math.round(mInit / 209);
           bodyEl.innerHTML = `
-            <input type="number" value="${m}" placeholder="월급 기준(원)" />
-            <div class="w-stat">일 환산(20.9일): ${daily.toLocaleString()}원<br/>시급 환산(209시간): ${hourly.toLocaleString()}원</div>
+            <input type="number" id="wg_${wObj.id}" value="${mInit}" placeholder="월급 기준(원)" />
+            <div class="w-stat" id="stat_${wObj.id}">일 환산(20.9일): ${dailyInit.toLocaleString()}원<br/>시급 환산(209시간): ${hourlyInit.toLocaleString()}원</div>
           `;
-          bodyEl.querySelector('input').oninput = (e) => { s.monthly = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
+          const inp = bodyEl.querySelector(`#wg_${wObj.id}`);
+          const statEl = bodyEl.querySelector(`#stat_${wObj.id}`);
+          inp.addEventListener('input', (e) => {
+            const m = Number(e.target.value || 0);
+            const daily = Math.round(m / 20.9);
+            const hourly = Math.round(m / 209);
+            s.monthly = m;
+            saveAll();
+            if (statEl) statEl.innerHTML = `일 환산(20.9일): ${daily.toLocaleString()}원<br/>시급 환산(209시간): ${hourly.toLocaleString()}원`;
+          });
           break;
         }
         case 'quote_sum': {
-          const u = Number(s.unitPrice || 0);
-          const q = Number(s.qty || 0);
-          const sub = u * q;
-          const tot = Math.round(sub * 1.1);
+          const uInit = Number(s.unitPrice || 0);
+          const qInit = Number(s.qty || 0);
+          const subInit = uInit * qInit;
+          const totInit = Math.round(subInit * 1.1);
           bodyEl.innerHTML = `
             <div style="display:flex; gap:4px;">
-              <input type="number" id="u_${wObj.id}" value="${u}" placeholder="단가" style="flex:1;" />
-              <input type="number" id="q_${wObj.id}" value="${q}" placeholder="수량" style="width:70px;" />
+              <input type="number" id="u_${wObj.id}" value="${uInit}" placeholder="단가" style="flex:1;" />
+              <input type="number" id="q_${wObj.id}" value="${qInit}" placeholder="수량" style="width:70px;" />
             </div>
-            <div class="w-stat">공급가: ${sub.toLocaleString()}원 · VAT포함: ${tot.toLocaleString()}원</div>
+            <div class="w-stat" id="stat_${wObj.id}">공급가: ${subInit.toLocaleString()}원 · VAT포함: ${totInit.toLocaleString()}원</div>
           `;
-          bodyEl.querySelector(`#u_${wObj.id}`).oninput = (e) => { s.unitPrice = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
-          bodyEl.querySelector(`#q_${wObj.id}`).oninput = (e) => { s.qty = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
+          const uInp = bodyEl.querySelector(`#u_${wObj.id}`);
+          const qInp = bodyEl.querySelector(`#q_${wObj.id}`);
+          const statEl = bodyEl.querySelector(`#stat_${wObj.id}`);
+          const refresh = () => {
+            const u = Number(uInp.value || 0);
+            const q = Number(qInp.value || 0);
+            const sub = u * q;
+            const tot = Math.round(sub * 1.1);
+            s.unitPrice = u;
+            s.qty = q;
+            saveAll();
+            if (statEl) statEl.textContent = `공급가: ${sub.toLocaleString()}원 · VAT포함: ${tot.toLocaleString()}원`;
+          };
+          uInp.addEventListener('input', refresh);
+          qInp.addEventListener('input', refresh);
           break;
         }
         case 'mini_calc': {
-          let resultText = '';
-          try {
-            const safeExpr = String(s.expr || '').replace(/[^0-9+\-*/().\s]/g, '');
-            const val = Function(`"use strict"; return (${safeExpr || 0})`)();
-            resultText = Number.isFinite(val) ? Number(val).toLocaleString() : '계산 불가';
-          } catch {
-            resultText = '수식 확인 필요';
-          }
+          const calcExpr = (exprStr) => {
+            try {
+              const safeExpr = String(exprStr || '').replace(/[^0-9+\-*/().\s]/g, '');
+              const val = Function(`"use strict"; return (${safeExpr || 0})`)();
+              return Number.isFinite(val) ? Number(val).toLocaleString() : '계산 불가';
+            } catch {
+              return '수식 확인 필요';
+            }
+          };
           bodyEl.innerHTML = `
-            <input type="text" value="${escapeHtml(s.expr || '')}" placeholder="예: 15000 * 4 + 2000" />
-            <div class="w-stat">결과: ${resultText}</div>
+            <input type="text" id="mc_${wObj.id}" value="${escapeHtml(s.expr || '')}" placeholder="예: 15000 * 4 + 2000" />
+            <div class="w-stat" id="stat_${wObj.id}">결과: ${calcExpr(s.expr || '')}</div>
           `;
-          bodyEl.querySelector('input').oninput = (e) => { s.expr = e.target.value; saveAll(); renderCanvasWidgets(); };
+          const inp = bodyEl.querySelector(`#mc_${wObj.id}`);
+          const statEl = bodyEl.querySelector(`#stat_${wObj.id}`);
+          inp.addEventListener('input', (e) => {
+            s.expr = e.target.value;
+            saveAll();
+            if (statEl) statEl.textContent = `결과: ${calcExpr(s.expr)}`;
+          });
           break;
         }
         case 'todo_list':
@@ -2073,17 +2130,29 @@ if (droppedFiles && droppedFiles.length > 0) {
           renderChecklistBody(bodyEl, wObj, 'items', '검수 항목 입력...');
           break;
         case 'dday_counter': {
-          const today = new Date(formatDate(new Date()) + 'T00:00:00');
-          const target = new Date((s.targetDate || formatDate(new Date())) + 'T00:00:00');
-          const diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
-          const label = diffDays === 0 ? 'D-Day (오늘)' : diffDays > 0 ? `D-${diffDays}` : `D+${Math.abs(diffDays)}`;
+          const calcDday = (nameVal, dateVal) => {
+            const today = new Date(formatDate(new Date()) + 'T00:00:00');
+            const target = new Date((dateVal || formatDate(new Date())) + 'T00:00:00');
+            const diffDays = Math.round((target - today) / (1000 * 60 * 60 * 24));
+            const label = diffDays === 0 ? 'D-Day (오늘)' : diffDays > 0 ? `D-${diffDays}` : `D+${Math.abs(diffDays)}`;
+            return `${nameVal || '목표'}: ${label}`;
+          };
           bodyEl.innerHTML = `
             <input type="text" id="dn_${wObj.id}" value="${escapeHtml(s.targetName || '')}" placeholder="일정명" />
             <input type="date" id="dd_${wObj.id}" value="${escapeHtml(s.targetDate || '')}" />
-            <div class="w-stat">${escapeHtml(s.targetName || '목표')}: ${label}</div>
+            <div class="w-stat" id="stat_${wObj.id}">${escapeHtml(calcDday(s.targetName, s.targetDate))}</div>
           `;
-          bodyEl.querySelector(`#dn_${wObj.id}`).oninput = (e) => { s.targetName = e.target.value; saveAll(); renderCanvasWidgets(); };
-          bodyEl.querySelector(`#dd_${wObj.id}`).onchange = (e) => { s.targetDate = e.target.value; saveAll(); renderCanvasWidgets(); };
+          const dnInp = bodyEl.querySelector(`#dn_${wObj.id}`);
+          const ddInp = bodyEl.querySelector(`#dd_${wObj.id}`);
+          const statEl = bodyEl.querySelector(`#stat_${wObj.id}`);
+          const refresh = () => {
+            s.targetName = dnInp.value;
+            s.targetDate = ddInp.value;
+            saveAll();
+            if (statEl) statEl.textContent = calcDday(s.targetName, s.targetDate);
+          };
+          dnInp.addEventListener('input', refresh);
+          ddInp.addEventListener('change', refresh);
           break;
         }
         case 'pomodoro_timer': {
@@ -2111,39 +2180,61 @@ if (droppedFiles && droppedFiles.length > 0) {
           break;
         }
         case 'weekly_kpi': {
+          const pctInit = Number(s.progress || 0);
           bodyEl.innerHTML = `
-            <input type="text" value="${escapeHtml(s.goal || '')}" placeholder="주간 목표" />
+            <input type="text" id="kpiGoal_${wObj.id}" value="${escapeHtml(s.goal || '')}" placeholder="주간 목표" />
             <div style="display:flex; align-items:center; gap:6px;">
-              <input type="range" min="0" max="100" value="${Number(s.progress || 0)}" style="flex:1;" />
-              <strong style="font-size:12px;">${Number(s.progress || 0)}%</strong>
+              <input type="range" id="kpiRng_${wObj.id}" min="0" max="100" value="${pctInit}" style="flex:1;" />
+              <strong id="kpiVal_${wObj.id}" style="font-size:12px;">${pctInit}%</strong>
             </div>
           `;
-          bodyEl.querySelector('input[type="text"]').oninput = (e) => { s.goal = e.target.value; saveAll(); };
-          bodyEl.querySelector('input[type="range"]').oninput = (e) => { s.progress = Number(e.target.value); saveAll(); renderCanvasWidgets(); };
+          const goalInp = bodyEl.querySelector(`#kpiGoal_${wObj.id}`);
+          const rngInp = bodyEl.querySelector(`#kpiRng_${wObj.id}`);
+          const valEl = bodyEl.querySelector(`#kpiVal_${wObj.id}`);
+          goalInp.addEventListener('input', (e) => { s.goal = e.target.value; saveAll(); });
+          rngInp.addEventListener('input', (e) => {
+            const p = Number(e.target.value);
+            s.progress = p;
+            saveAll();
+            if (valEl) valEl.textContent = `${p}%`;
+          });
           break;
         }
         case 'corp_info': {
           bodyEl.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:center; gap:4px;">
-              <span>사업자: <strong>${escapeHtml(s.bizNo)}</strong></span>
+              <span>사업자: <strong id="bizView_${wObj.id}">${escapeHtml(s.bizNo)}</strong></span>
               <button class="secondary small" id="cpBiz_${wObj.id}">복사</button>
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center; gap:4px;">
-              <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">계좌: <strong>${escapeHtml(s.bank)}</strong></span>
+              <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">계좌: <strong id="bankView_${wObj.id}">${escapeHtml(s.bank)}</strong></span>
               <button class="secondary small" id="cpBank_${wObj.id}">복사</button>
             </div>
-            <input type="text" value="${escapeHtml(s.bizNo)}" placeholder="사업자등록번호 수정" />
-            <input type="text" value="${escapeHtml(s.bank)}" placeholder="계좌번호 수정" />
+            <input type="text" id="bizInp_${wObj.id}" value="${escapeHtml(s.bizNo)}" placeholder="사업자등록번호 입력" />
+            <input type="text" id="bankInp_${wObj.id}" value="${escapeHtml(s.bank)}" placeholder="계좌번호 입력" />
           `;
-          const inputs = bodyEl.querySelectorAll('input');
-          bodyEl.querySelector(`#cpBiz_${wObj.id}`).onclick = () => copyText(s.bizNo, '사업자등록번호');
-          bodyEl.querySelector(`#cpBank_${wObj.id}`).onclick = () => copyText(s.bank, '계좌번호');
-          inputs[0].oninput = (e) => { s.bizNo = e.target.value; saveAll(); renderCanvasWidgets(); };
-          inputs[1].oninput = (e) => { s.bank = e.target.value; saveAll(); renderCanvasWidgets(); };
+          const bizInp = bodyEl.querySelector(`#bizInp_${wObj.id}`);
+          const bankInp = bodyEl.querySelector(`#bankInp_${wObj.id}`);
+          const bizView = bodyEl.querySelector(`#bizView_${wObj.id}`);
+          const bankView = bodyEl.querySelector(`#bankView_${wObj.id}`);
+
+          bodyEl.querySelector(`#cpBiz_${wObj.id}`).onclick = () => copyText(s.bizNo || '', '사업자등록번호');
+          bodyEl.querySelector(`#cpBank_${wObj.id}`).onclick = () => copyText(s.bank || '', '계좌번호');
+
+          bizInp.addEventListener('input', (e) => {
+            s.bizNo = e.target.value;
+            saveAll();
+            if (bizView) bizView.textContent = s.bizNo;
+          });
+          bankInp.addEventListener('input', (e) => {
+            s.bank = e.target.value;
+            saveAll();
+            if (bankView) bankView.textContent = s.bank;
+          });
           break;
         }
         case 'filename_gen': {
-          const generated = `${s.date || '20261126'}_${s.dept || '업무'}_${s.doc || '문서'}_${s.ver || 'v1'}`;
+          const makeName = () => `${s.date || '20261127'}_${s.dept || '업무'}_${s.doc || '문서'}_${s.ver || 'v1'}`;
           bodyEl.innerHTML = `
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px;">
               <input type="text" id="fnD_${wObj.id}" value="${escapeHtml(s.date)}" placeholder="날짜" />
@@ -2152,66 +2243,105 @@ if (droppedFiles && droppedFiles.length > 0) {
               <input type="text" id="fnV_${wObj.id}" value="${escapeHtml(s.ver)}" placeholder="버전" />
             </div>
             <div class="w-stat" style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
-              <span style="overflow:hidden; text-overflow:ellipsis;">${escapeHtml(generated)}</span>
+              <span id="fnOut_${wObj.id}" style="overflow:hidden; text-overflow:ellipsis;">${escapeHtml(makeName())}</span>
               <button class="small" id="fnCp_${wObj.id}">복사</button>
             </div>
           `;
-          bodyEl.querySelector(`#fnD_${wObj.id}`).oninput = (e) => { s.date = e.target.value; saveAll(); renderCanvasWidgets(); };
-          bodyEl.querySelector(`#fnP_${wObj.id}`).oninput = (e) => { s.dept = e.target.value; saveAll(); renderCanvasWidgets(); };
-          bodyEl.querySelector(`#fnM_${wObj.id}`).oninput = (e) => { s.doc = e.target.value; saveAll(); renderCanvasWidgets(); };
-          bodyEl.querySelector(`#fnV_${wObj.id}`).oninput = (e) => { s.ver = e.target.value; saveAll(); renderCanvasWidgets(); };
-          bodyEl.querySelector(`#fnCp_${wObj.id}`).onclick = () => copyText(generated, '파일명');
+          const dInp = bodyEl.querySelector(`#fnD_${wObj.id}`);
+          const pInp = bodyEl.querySelector(`#fnP_${wObj.id}`);
+          const mInp = bodyEl.querySelector(`#fnM_${wObj.id}`);
+          const vInp = bodyEl.querySelector(`#fnV_${wObj.id}`);
+          const outEl = bodyEl.querySelector(`#fnOut_${wObj.id}`);
+          const refresh = () => {
+            s.date = dInp.value;
+            s.dept = pInp.value;
+            s.doc = mInp.value;
+            s.ver = vInp.value;
+            saveAll();
+            if (outEl) outEl.textContent = makeName();
+          };
+          [dInp, pInp, mInp, vInp].forEach((el) => el.addEventListener('input', refresh));
+          bodyEl.querySelector(`#fnCp_${wObj.id}`).onclick = () => copyText(makeName(), '파일명');
           break;
         }
         case 'mail_subject': {
-          const subj = `${s.prefix || ''} ${s.date || ''} ${s.subject || ''}`.trim();
+          const makeSubj = () => `${s.prefix || ''} ${s.date || ''} ${s.subject || ''}`.trim();
           bodyEl.innerHTML = `
             <div style="display:flex; gap:4px;">
               <input type="text" id="ms1_${wObj.id}" value="${escapeHtml(s.prefix)}" style="width:110px;" />
               <input type="text" id="ms2_${wObj.id}" value="${escapeHtml(s.subject)}" style="flex:1;" />
             </div>
             <div class="w-stat" style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
-              <span style="overflow:hidden; text-overflow:ellipsis;">${escapeHtml(subj)}</span>
+              <span id="msOut_${wObj.id}" style="overflow:hidden; text-overflow:ellipsis;">${escapeHtml(makeSubj())}</span>
               <button class="small" id="msCp_${wObj.id}">복사</button>
             </div>
           `;
-          bodyEl.querySelector(`#ms1_${wObj.id}`).oninput = (e) => { s.prefix = e.target.value; saveAll(); renderCanvasWidgets(); };
-          bodyEl.querySelector(`#ms2_${wObj.id}`).oninput = (e) => { s.subject = e.target.value; saveAll(); renderCanvasWidgets(); };
-          bodyEl.querySelector(`#msCp_${wObj.id}`).onclick = () => copyText(subj, '메일 제목');
+          const pInp = bodyEl.querySelector(`#ms1_${wObj.id}`);
+          const sInp = bodyEl.querySelector(`#ms2_${wObj.id}`);
+          const outEl = bodyEl.querySelector(`#msOut_${wObj.id}`);
+          const refresh = () => {
+            s.prefix = pInp.value;
+            s.subject = sInp.value;
+            saveAll();
+            if (outEl) outEl.textContent = makeSubj();
+          };
+          pInp.addEventListener('input', refresh);
+          sInp.addEventListener('input', refresh);
+          bodyEl.querySelector(`#msCp_${wObj.id}`).onclick = () => copyText(makeSubj(), '메일 제목');
           break;
         }
         case 'nas_mini_fav': {
           bodyEl.innerHTML = `
-            <input type="text" value="${escapeHtml(s.path || '')}" placeholder="경로 입력" />
+            <input type="text" id="nfInp_${wObj.id}" value="${escapeHtml(s.path || '')}" placeholder="경로 입력" />
             <button class="small" id="nfCp_${wObj.id}">경로 복사</button>
           `;
-          bodyEl.querySelector('input').oninput = (e) => { s.path = e.target.value; saveAll(); };
+          const inp = bodyEl.querySelector(`#nfInp_${wObj.id}`);
+          inp.addEventListener('input', (e) => { s.path = e.target.value; saveAll(); });
           bodyEl.querySelector(`#nfCp_${wObj.id}`).onclick = () => copyText(s.path || '', 'NAS 경로');
           break;
         }
         case 'char_counter': {
-          const txt = s.text || '';
-          const noSpace = txt.replace(/\s+/g, '').length;
+          const txtInit = s.text || '';
+          const noSpaceInit = txtInit.replace(/\s+/g, '').length;
           bodyEl.innerHTML = `
-            <textarea style="flex:1; min-height:70px;" placeholder="글자 수를 셀 문장을 입력하세요...">${escapeHtml(txt)}</textarea>
-            <div class="w-stat">공백 포함: ${txt.length}자 · 공백 제외: ${noSpace}자</div>
+            <textarea id="ccTa_${wObj.id}" style="flex:1; min-height:70px;" placeholder="글자 수를 셀 문장을 입력하세요...">${escapeHtml(txtInit)}</textarea>
+            <div class="w-stat" id="stat_${wObj.id}">공백 포함: ${txtInit.length}자 · 공백 제외: ${noSpaceInit}자</div>
           `;
-          bodyEl.querySelector('textarea').oninput = (e) => { s.text = e.target.value; saveAll(); renderCanvasWidgets(); };
+          const ta = bodyEl.querySelector(`#ccTa_${wObj.id}`);
+          const statEl = bodyEl.querySelector(`#stat_${wObj.id}`);
+          ta.addEventListener('input', (e) => {
+            const txt = e.target.value;
+            const noSpace = txt.replace(/\s+/g, '').length;
+            s.text = txt;
+            saveAll();
+            if (statEl) statEl.textContent = `공백 포함: ${txt.length}자 · 공백 제외: ${noSpace}자`;
+          });
           break;
         }
         case 'date_diff': {
-          const d1 = new Date((s.startDate || formatDate(new Date())) + 'T00:00:00');
-          const d2 = new Date((s.endDate || formatDate(new Date())) + 'T00:00:00');
-          const diff = Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+          const calcDiff = () => {
+            const d1 = new Date((s.startDate || formatDate(new Date())) + 'T00:00:00');
+            const d2 = new Date((s.endDate || formatDate(new Date())) + 'T00:00:00');
+            return Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+          };
           bodyEl.innerHTML = `
             <div style="display:flex; gap:4px;">
               <input type="date" id="df1_${wObj.id}" value="${escapeHtml(s.startDate)}" style="flex:1;" />
               <input type="date" id="df2_${wObj.id}" value="${escapeHtml(s.endDate)}" style="flex:1;" />
             </div>
-            <div class="w-stat">기간 차이: ${diff}일</div>
+            <div class="w-stat" id="stat_${wObj.id}">기간 차이: ${calcDiff()}일</div>
           `;
-          bodyEl.querySelector(`#df1_${wObj.id}`).onchange = (e) => { s.startDate = e.target.value; saveAll(); renderCanvasWidgets(); };
-          bodyEl.querySelector(`#df2_${wObj.id}`).onchange = (e) => { s.endDate = e.target.value; saveAll(); renderCanvasWidgets(); };
+          const d1Inp = bodyEl.querySelector(`#df1_${wObj.id}`);
+          const d2Inp = bodyEl.querySelector(`#df2_${wObj.id}`);
+          const statEl = bodyEl.querySelector(`#stat_${wObj.id}`);
+          const refresh = () => {
+            s.startDate = d1Inp.value;
+            s.endDate = d2Inp.value;
+            saveAll();
+            if (statEl) statEl.textContent = `기간 차이: ${calcDiff()}일`;
+          };
+          d1Inp.addEventListener('change', refresh);
+          d2Inp.addEventListener('change', refresh);
           break;
         }
         case 'world_clock': {
@@ -2228,66 +2358,88 @@ if (droppedFiles && droppedFiles.length > 0) {
           break;
         }
         case 'unit_converter': {
-          const val = Number(s.val || 0);
-          let out = '';
-          if (s.mode === 'm_to_pyeong') out = `${(val * 0.3025).toFixed(2)} 평`;
-          else if (s.mode === 'km_to_m') out = `${(val * 1000).toLocaleString()} m`;
-          else out = `${(val / 1000).toFixed(3)} 톤(t)`;
+          const calcUnit = (valNum, modeVal) => {
+            if (modeVal === 'm_to_pyeong') return `${(valNum * 0.3025).toFixed(2)} 평`;
+            if (modeVal === 'km_to_m') return `${(valNum * 1000).toLocaleString()} m`;
+            return `${(valNum / 1000).toFixed(3)} 톤(t)`;
+          };
+          const valInit = Number(s.val || 0);
           bodyEl.innerHTML = `
             <div style="display:flex; gap:4px;">
-              <input type="number" value="${val}" style="width:90px;" />
-              <select style="flex:1;">
+              <input type="number" id="ucVal_${wObj.id}" value="${valInit}" style="width:90px;" />
+              <select id="ucMode_${wObj.id}" style="flex:1;">
                 <option value="m_to_pyeong" ${s.mode === 'm_to_pyeong' ? 'selected' : ''}>㎡ → 평</option>
                 <option value="km_to_m" ${s.mode === 'km_to_m' ? 'selected' : ''}>km → m</option>
                 <option value="kg_to_t" ${s.mode === 'kg_to_t' ? 'selected' : ''}>kg → 톤(t)</option>
               </select>
             </div>
-            <div class="w-stat">변환 결과: ${out}</div>
+            <div class="w-stat" id="stat_${wObj.id}">변환 결과: ${calcUnit(valInit, s.mode)}</div>
           `;
-          bodyEl.querySelector('input').oninput = (e) => { s.val = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
-          bodyEl.querySelector('select').onchange = (e) => { s.mode = e.target.value; saveAll(); renderCanvasWidgets(); };
+          const vInp = bodyEl.querySelector(`#ucVal_${wObj.id}`);
+          const mSel = bodyEl.querySelector(`#ucMode_${wObj.id}`);
+          const statEl = bodyEl.querySelector(`#stat_${wObj.id}`);
+          const refresh = () => {
+            s.val = Number(vInp.value || 0);
+            s.mode = mSel.value;
+            saveAll();
+            if (statEl) statEl.textContent = `변환 결과: ${calcUnit(s.val, s.mode)}`;
+          };
+          vInp.addEventListener('input', refresh);
+          mSel.addEventListener('change', refresh);
           break;
         }
         case 'percent_calc': {
-          const part = Number(s.part || 0);
-          const total = Number(s.total || 0);
-          const pct = total > 0 ? ((part / total) * 100).toFixed(2) : '0.00';
+          const calcPct = (pNum, tNum) => (tNum > 0 ? ((pNum / tNum) * 100).toFixed(2) : '0.00');
+          const partInit = Number(s.part || 0);
+          const totalInit = Number(s.total || 0);
           bodyEl.innerHTML = `
             <div style="display:flex; gap:4px; align-items:center;">
-              <input type="number" id="pc1_${wObj.id}" value="${part}" style="flex:1;" />
+              <input type="number" id="pc1_${wObj.id}" value="${partInit}" style="flex:1;" />
               <span>/</span>
-              <input type="number" id="pc2_${wObj.id}" value="${total}" style="flex:1;" />
+              <input type="number" id="pc2_${wObj.id}" value="${totalInit}" style="flex:1;" />
             </div>
-            <div class="w-stat">비율: ${pct}%</div>
+            <div class="w-stat" id="stat_${wObj.id}">비율: ${calcPct(partInit, totalInit)}%</div>
           `;
-          bodyEl.querySelector(`#pc1_${wObj.id}`).oninput = (e) => { s.part = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
-          bodyEl.querySelector(`#pc2_${wObj.id}`).oninput = (e) => { s.total = Number(e.target.value || 0); saveAll(); renderCanvasWidgets(); };
+          const pInp = bodyEl.querySelector(`#pc1_${wObj.id}`);
+          const tInp = bodyEl.querySelector(`#pc2_${wObj.id}`);
+          const statEl = bodyEl.querySelector(`#stat_${wObj.id}`);
+          const refresh = () => {
+            s.part = Number(pInp.value || 0);
+            s.total = Number(tInp.value || 0);
+            saveAll();
+            if (statEl) statEl.textContent = `비율: ${calcPct(s.part, s.total)}%`;
+          };
+          pInp.addEventListener('input', refresh);
+          tInp.addEventListener('input', refresh);
           break;
         }
         case 'random_picker': {
           bodyEl.innerHTML = `
-            <input type="text" value="${escapeHtml(s.pool || '')}" placeholder="쉼표(,)로 구분해 입력" />
+            <input type="text" id="rpInp_${wObj.id}" value="${escapeHtml(s.pool || '')}" placeholder="쉼표(,)로 구분해 입력" />
             <div style="display:flex; gap:6px; align-items:center;">
               <button class="small" id="rpBtn_${wObj.id}">추첨하기</button>
-              <strong style="color:var(--accent);">${escapeHtml(s.picked || '-')}</strong>
+              <strong id="rpOut_${wObj.id}" style="color:var(--accent);">${escapeHtml(s.picked || '-')}</strong>
             </div>
           `;
-          bodyEl.querySelector('input').oninput = (e) => { s.pool = e.target.value; saveAll(); };
+          const inp = bodyEl.querySelector(`#rpInp_${wObj.id}`);
+          const outEl = bodyEl.querySelector(`#rpOut_${wObj.id}`);
+          inp.addEventListener('input', (e) => { s.pool = e.target.value; saveAll(); });
           bodyEl.querySelector(`#rpBtn_${wObj.id}`).onclick = () => {
             const arr = String(s.pool || '').split(',').map((x) => x.trim()).filter(Boolean);
             if (!arr.length) return;
             s.picked = arr[Math.floor(Math.random() * arr.length)];
             saveAll();
-            renderCanvasWidgets();
+            if (outEl) outEl.textContent = s.picked;
           };
           break;
         }
         case 'quick_url_note': {
           bodyEl.innerHTML = `
-            <input type="url" value="${escapeHtml(s.url || '')}" placeholder="https://..." />
+            <input type="url" id="quInp_${wObj.id}" value="${escapeHtml(s.url || '')}" placeholder="https://..." />
             <button class="small" id="quBtn_${wObj.id}">새 탭 열기</button>
           `;
-          bodyEl.querySelector('input').oninput = (e) => { s.url = e.target.value; saveAll(); };
+          const inp = bodyEl.querySelector(`#quInp_${wObj.id}`);
+          inp.addEventListener('input', (e) => { s.url = e.target.value; saveAll(); });
           bodyEl.querySelector(`#quBtn_${wObj.id}`).onclick = () => {
             if (s.url) window.open(s.url, '_blank', 'noopener');
           };
@@ -2295,10 +2447,16 @@ if (droppedFiles && droppedFiles.length > 0) {
         }
         case 'daily_focus': {
           bodyEl.innerHTML = `
-            <input type="text" value="${escapeHtml(s.text || '')}" />
-            <div class="w-stat">${escapeHtml(s.text || '')}</div>
+            <input type="text" id="dfInp_${wObj.id}" value="${escapeHtml(s.text || '')}" />
+            <div class="w-stat" id="stat_${wObj.id}">${escapeHtml(s.text || '')}</div>
           `;
-          bodyEl.querySelector('input').oninput = (e) => { s.text = e.target.value; saveAll(); renderCanvasWidgets(); };
+          const inp = bodyEl.querySelector(`#dfInp_${wObj.id}`);
+          const statEl = bodyEl.querySelector(`#stat_${wObj.id}`);
+          inp.addEventListener('input', (e) => {
+            s.text = e.target.value;
+            saveAll();
+            if (statEl) statEl.textContent = s.text;
+          });
           break;
         }
         default:
