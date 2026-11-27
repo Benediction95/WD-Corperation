@@ -1,4 +1,4 @@
-name: Build WD CORPORATION Windows EXE
+name: Build WD Corperation Windows EXE
 
 on:
   push:
@@ -29,5 +29,5 @@ jobs:
       - name: Upload EXE artifact
         uses: actions/upload-artifact@v4
         with:
-          name: WD-Corporation-Windows-Installer
+          name: WD-Corperation-Windows-Installer
           path: dist/*.exe
